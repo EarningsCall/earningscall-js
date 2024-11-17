@@ -1,5 +1,11 @@
 node_modules/
-
 .env
-
 .DS_Store
+build/
+.idea/*
+.nyc_output
+test
+src/**.js
+coverage
+*.log
+package-lock.json
