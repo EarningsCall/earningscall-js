@@ -76,11 +76,6 @@ jobs:
         node-version: [22.x]
 
     steps:
-      - name: Download all the Build Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: npm-package-build-artifacts
-          path: build/
       - uses: actions/checkout@v4
 
       - name: Set up Node.js for NPM
@@ -89,8 +84,16 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           node-version: ${{ matrix.node-version }}
 
-      - run: npm install
-      - run: npm publish
+      - run: yarn install --frozen-lockfile
+      - name: Download all the Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: npm-package-build-artifacts
+          path: build/
+      - name: Show the build artifacts
+        run: |
+          ls -la build/
+      - run: yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
