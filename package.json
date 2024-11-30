@@ -88,6 +88,7 @@
       }
     },
     "files": [
+      "src/**/*.spec.ts",
       "!build/module/**"
     ]
   },
@@ -102,7 +103,18 @@
   "nyc": {
     "extends": "@istanbuljs/nyc-config-typescript",
     "exclude": [
-      "**/*.spec.js"
+      "**/*.spec.js",
+      "**/*.spec.ts",
+      "build/",
+      "coverage/"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ],
+    "all": true,
+    "reporter": [
+      "text",
+      "html"
     ]
   },
   "types": "build/main/index.d.ts"

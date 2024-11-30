@@ -9,7 +9,7 @@ import {
 } from './sectors';
 
 // WARNING: Add new indexes to the *END* of this list
-const EXCHANGES_IN_ORDER = [
+export const EXCHANGES_IN_ORDER = [
   'NYSE',
   'NASDAQ',
   'AMEX',
