@@ -1,6 +1,6 @@
 {
   "name": "earningscall",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "The EarningsCall JavaScript library provides convenient access to the EarningsCall API.  It includes a pre-defined set of classes for API resources that initialize themselves dynamically from API responses.",
   "author": "EarningsCall <dev@earningscall.biz>",
   "main": "build/main/index.js",
@@ -67,7 +67,7 @@
     "open-cli": "^6.0.1",
     "prettier": "^2.1.1",
     "standard-version": "^9.0.0",
-    "ts-node": "^9.0.0",
+    "ts-node": "^10.9.2",
     "typedoc": "^0.19.0",
     "typescript": "^4.9.5"
   },
