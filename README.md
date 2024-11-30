@@ -16,7 +16,7 @@ responses.
 
 # Requirements
 
-* Node.js 22+
+* Node.js 18+
 
 ## Installation
 

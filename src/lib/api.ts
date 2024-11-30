@@ -7,7 +7,8 @@ function getApiKey(): string {
   // if (earningscall.api_key) {
   //   return earningscall.api_key;
   // }
-  return process.env.ECALL_API_KEY || 'demo';
+  // return process.env.ECALL_API_KEY || 'demo';
+  return 'demo';
 }
 
 function apiKeyParam(): { apikey: string } {

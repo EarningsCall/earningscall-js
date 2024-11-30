@@ -1,35 +1,33 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "parserOptions": { "project": "./tsconfig.json" },
-  "env": { "es6": true },
-  "ignorePatterns": ["node_modules", "build", "coverage"],
-  "plugins": ["import", "eslint-comments", "functional"],
+  "parserOptions": {
+    "project": "tsconfig.json",
+    "sourceType": "module"
+  },
+  "plugins": ["@typescript-eslint", "eslint-plugin-functional", "eslint-plugin-import"],
   "extends": [
     "eslint:recommended",
-    "plugin:eslint-comments/recommended",
     "plugin:@typescript-eslint/recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
     "plugin:import/typescript",
-    "plugin:functional/lite",
-    "prettier",
-    "prettier/@typescript-eslint"
+    "plugin:functional/recommended",
+    "prettier"
   ],
-  "globals": { "BigInt": true, "console": true, "WebAssembly": true },
   "rules": {
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "eslint-comments/disable-enable-pair": [
-      "error",
-      { "allowWholeFile": true }
-    ],
-    "eslint-comments/no-unused-disable": "error",
-    "import/order": [
-      "error",
-      { "newlines-between": "always", "alphabetize": { "order": "asc" } }
-    ],
-    "sort-imports": [
-      "error",
-      { "ignoreDeclarationSort": true, "ignoreCase": true }
-    ],
-    "functional/prefer-readonly-type": "off"
+    "@typescript-eslint/no-explicit-any": "off",
+    "functional/no-class": "off",
+    "functional/no-this-expression": "off",
+    "functional/prefer-readonly-type": "off",
+    "functional/no-expression-statements": "off",
+    "functional/functional-parameters": "off",
+    "functional/no-return-void": "off",
+    "functional/no-conditional-statements": "off",
+    "functional/prefer-immutable-types": "off",
+    "import/no-unresolved": ["error", {
+      "ignore": ["ava"]
+    }]
   }
 }
