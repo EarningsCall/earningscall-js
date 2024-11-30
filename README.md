@@ -17,3 +17,14 @@ responses.
 # Requirements
 
 * Node.js 22+
+
+## Installation
+
+Install the package with:
+
+```sh
+npm install earningscall
+# or
+yarn add earningscall
+```
+

@@ -85,7 +85,7 @@ async function doGet(
 }
 
 async function getEvents(exchange: string, symbol: string): Promise<unknown> {
-  console.log(`get_events exchange: ${exchange} symbol: ${symbol}`);
+  // console.log(`get_events exchange: ${exchange} symbol: ${symbol}`);
   const params = {
     exchange,
     symbol,
@@ -125,7 +125,7 @@ async function getSymbolsV2(): Promise<string | null> {
 }
 
 async function getSp500CompaniesTxtFile(): Promise<string | null> {
-  console.log('get_sp500_companies_txt_file');
+  // console.log('get_sp500_companies_txt_file');
   const response = await doGet('symbols/sp500.txt', {});
   if (response.status !== 200) {
     return null;
