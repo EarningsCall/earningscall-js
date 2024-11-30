@@ -10,6 +10,8 @@ First, increment the version number in package.json.
 }
 ```
 
+Next, update the CHANGELOG.md file with the new version number and the changes made in the new version.
+
 Then, create a new git tag for the new version.
 
 ```
