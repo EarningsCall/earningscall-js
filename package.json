@@ -106,5 +106,6 @@
     "exclude": [
       "**/*.spec.js"
     ]
-  }
+  },
+  "types": "build/main/index.d.ts"
 }

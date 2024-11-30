@@ -34,7 +34,9 @@
     "lib": [
       "es2022"
     ],
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "typeRoots": [
       "node_modules/@types",
       "src/types"
