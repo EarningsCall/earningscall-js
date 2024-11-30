@@ -28,6 +28,7 @@
     "functional/prefer-immutable-types": "off",
     "import/no-unresolved": ["error", {
       "ignore": ["ava"]
-    }]
+    }],
+    "functional/no-classes": "off"
   }
 }
