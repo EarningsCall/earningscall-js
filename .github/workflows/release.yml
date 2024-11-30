@@ -54,6 +54,9 @@ jobs:
           yarn test
         # env:
         #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run Code Coverage
+        run: |
+          yarn cov
       - name: Coveralls
         uses: coverallsapp/github-action@v2
       - name: Store the build artifacts
