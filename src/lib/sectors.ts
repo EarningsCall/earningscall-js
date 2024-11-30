@@ -5,11 +5,11 @@ export const SECTORS_IN_ORDER = [
   'Consumer Defensive',
   'Energy',
   'Financial Services',
-    'Healthcare',
-    'Industrials',
-    'Real Estate',
-    'Technology',
-    'Utilities',
+  'Healthcare',
+  'Industrials',
+  'Real Estate',
+  'Technology',
+  'Utilities',
 ];
 
 export const INDUSTRIES_IN_ORDER = [

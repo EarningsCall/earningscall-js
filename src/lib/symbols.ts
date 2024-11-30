@@ -1,10 +1,23 @@
 import log from 'loglevel';
 
 import { getSymbolsV2 } from './api';
-import { indexToIndustry, indexToSector, industryToIndex, sectorToIndex } from './sectors';
+import {
+  indexToIndustry,
+  indexToSector,
+  industryToIndex,
+  sectorToIndex,
+} from './sectors';
 
 // WARNING: Add new indexes to the *END* of this list
-const EXCHANGES_IN_ORDER = ["NYSE", "NASDAQ", "AMEX", "TSX", "TSXV", "OTC", "LSE"];
+const EXCHANGES_IN_ORDER = [
+  'NYSE',
+  'NASDAQ',
+  'AMEX',
+  'TSX',
+  'TSXV',
+  'OTC',
+  'LSE',
+];
 
 export function exchangeToIndex(exchange?: string): number {
   if (!exchange) {
@@ -29,9 +42,9 @@ export function indexToExchange(index: number): string {
 }
 
 export const securityTypePattern: { [key: string]: RegExp } = {
-  "NASDAQ": / - .*$/,
-  "NYSE": / (Common Stock|Warrants)$/,
-  "AMEX": / (Common Stock|Warrants)$/,
+  NASDAQ: / - .*$/,
+  NYSE: / (Common Stock|Warrants)$/,
+  AMEX: / (Common Stock|Warrants)$/,
 };
 
 type CompanyInfoData = {
@@ -66,16 +79,16 @@ export function createCompanyInfo(data: CompanyInfoData = {}): CompanyInfo & {
     toTxtRow: () => [
       String(exchangeToIndex(data.exchange)),
       data.symbol || '',
-      data.name || ''
+      data.name || '',
     ],
     toTxtV2Row: () => [
       String(exchangeToIndex(data.exchange)),
       data.symbol || '',
       data.name || '',
       String(sectorToIndex(data.sector)),
-      String(industryToIndex(data.industry))
+      String(industryToIndex(data.industry)),
     ],
-    exchangeSymbol: () => `${data.exchange}_${data.symbol}`
+    exchangeSymbol: () => `${data.exchange}_${data.symbol}`,
   };
 }
 
@@ -96,6 +109,7 @@ type SymbolsMethods = {
   // eslint-disable-next-line functional/no-return-void
   removeExchangeSymbol: (exchangeSymbol: string) => void;
   // withoutSecurityNames: () => any[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   toDicts: () => any[];
   toJSON: (removeSecurityNames?: boolean) => string;
   toTxtV2: () => string;
@@ -121,14 +135,17 @@ export function createSymbols(): Symbols {
     return symbol;
   };
 
-  const get = (exchange: string, symbol: string) => getExchangeSymbol(`${exchange}_${symbol}`);
+  const get = (exchange: string, symbol: string) =>
+    getExchangeSymbol(`${exchange}_${symbol}`);
 
   return {
     exchanges,
     byName,
     byExchangeAndSym,
     add,
-    getAll: function* () { yield* byExchangeAndSym.values(); },
+    getAll: function* () {
+      yield* byExchangeAndSym.values();
+    },
     getExchangeSymbol,
     get,
     lookupCompany: (symbol: string) =>
@@ -146,16 +163,20 @@ export function createSymbols(): Symbols {
     },
     // withoutSecurityNames: () => [],
     toDicts: () => Array.from(byExchangeAndSym.values()),
-    toJSON: (removeSecurityNames = false) => JSON.stringify(removeSecurityNames ? [] : []),
+    toJSON: (removeSecurityNames = false) =>
+      JSON.stringify(removeSecurityNames ? [] : []),
     toTxtV2: () => '',
-    get size() { return byExchangeAndSym.size; },
-    [Symbol.iterator]: function* () { yield* byExchangeAndSym.values(); }
+    get size() {
+      return byExchangeAndSym.size;
+    },
+    [Symbol.iterator]: function* () {
+      yield* byExchangeAndSym.values();
+    },
   };
 }
 
 // eslint-disable-next-line functional/no-let
 let symbols: Symbols | null = null;
-
 
 export async function loadSymbols(): Promise<Symbols> {
   log.debug('Loading symbols');
@@ -166,16 +187,19 @@ export async function loadSymbols(): Promise<Symbols> {
   const symbols = createSymbols();
   return symbolsV2
     .split('\n')
-    .filter(line => line.trim())
+    .filter((line) => line.trim())
     .reduce((acc, line) => {
-      const [exchangeIndex, symbol, name, sectorIndex, industryIndex] = line.split('\t');
-      acc.add(createCompanyInfo({
-        exchange: indexToExchange(parseInt(exchangeIndex)),
-        symbol,
-        name,
-        sector: indexToSector(parseInt(sectorIndex)),
-        industry: indexToIndustry(parseInt(industryIndex))
-      }));
+      const [exchangeIndex, symbol, name, sectorIndex, industryIndex] =
+        line.split('\t');
+      acc.add(
+        createCompanyInfo({
+          exchange: indexToExchange(parseInt(exchangeIndex)),
+          symbol,
+          name,
+          sector: indexToSector(parseInt(sectorIndex)),
+          industry: indexToIndustry(parseInt(industryIndex)),
+        })
+      );
       return acc;
     }, symbols);
 }
@@ -194,4 +218,3 @@ export function clearSymbols(): void {
 }
 
 export { CompanyInfo, Symbols };
-
