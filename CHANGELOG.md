@@ -1,5 +1,8 @@
 # Changelog
 
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+### [0.0.11](https://github.com/EarningsCall/earningscall-js/compare/v0.0.9...v0.0.11) (2024-12-01)
 
 ### [0.0.6](https://github.com/EarningsCall/earningscall-js/compare/v0.0.5...v0.0.6) (2024-11-30)
 
