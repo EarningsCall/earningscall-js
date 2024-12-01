@@ -16,8 +16,8 @@ import { EXCHANGES_IN_ORDER, loadSymbols } from './symbols';
 // }
 
 export class Company {
-  private readonly companyInfo: CompanyInfo;
-  private readonly name?: string;
+  readonly companyInfo: CompanyInfo;
+  readonly name?: string;
   // private readonly events_?: EarningsEvent[];
 
   constructor(companyInfo: CompanyInfo) {

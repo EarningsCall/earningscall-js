@@ -94,7 +94,7 @@ export function createCompanyInfo(data: CompanyInfoData = {}): CompanyInfo & {
 
 type SymbolsData = {
   exchanges: Set<string>;
-  byName: Map<string, Set<CompanyInfo>>;
+  byName: Map<string, CompanyInfo>;
   byExchangeAndSym: Map<string, CompanyInfo>;
   size: number;
 };
@@ -120,13 +120,15 @@ type Symbols = SymbolsData & SymbolsMethods;
 
 export function createSymbols(): Symbols {
   const exchanges = new Set<string>();
-  const byName = new Map<string, Set<CompanyInfo>>();
+  const byName = new Map<string, CompanyInfo>();
   const byExchangeAndSym = new Map<string, CompanyInfo>();
 
-  const add = (sym: CompanyInfo) => {
-    log.info(sym);
-    // byExchangeAndSym.set(sym.exchangeSymbol(), sym);
-    // byName.set(sym.name, sym);
+  const add = (companyInfo: CompanyInfo) => {
+    log.info(companyInfo);
+    exchanges.add(companyInfo.exchange);
+    const exchangeSymbol = `${companyInfo.exchange}_${companyInfo.symbol}`;
+    byExchangeAndSym.set(exchangeSymbol, companyInfo);
+    byName.set(companyInfo.name, companyInfo);
   };
 
   const getExchangeSymbol = (exchangeSymbol: string) => {
@@ -185,23 +187,22 @@ export async function loadSymbols(): Promise<Symbols> {
   //   throw new Error('Failed to load symbols');
   // }
   const symbols = createSymbols();
-  return symbolsV2
+  symbolsV2
     .split('\n')
     .filter((line) => line.trim())
-    .reduce((acc, line) => {
+    .forEach((line) => {
       const [exchangeIndex, symbol, name, sectorIndex, industryIndex] =
         line.split('\t');
-      acc.add(
-        createCompanyInfo({
-          exchange: indexToExchange(parseInt(exchangeIndex)),
-          symbol,
-          name,
-          sector: indexToSector(parseInt(sectorIndex)),
-          industry: indexToIndustry(parseInt(industryIndex)),
-        })
-      );
-      return acc;
-    }, symbols);
+      const companyInfo = createCompanyInfo({
+        exchange: indexToExchange(parseInt(exchangeIndex)),
+        symbol,
+        name,
+        sector: indexToSector(parseInt(sectorIndex)),
+        industry: indexToIndustry(parseInt(industryIndex)),
+      });
+      symbols.add(companyInfo);
+    });
+  return symbols;
 }
 
 export async function getSymbols(): Promise<Symbols> {
