@@ -79,10 +79,13 @@ async function doGet(
   };
   const queryParams = new URLSearchParams(finalParams).toString();
   const url = `${API_BASE}/${path}?${queryParams}`;
-  return fetch(url, {
+  const response = await fetch(url, {
     method: 'GET',
     headers: getHeaders(),
   });
+  console.log('doGet');
+  console.log(response);
+  return response;
 }
 
 async function getEvents(exchange: string, symbol: string): Promise<unknown> {
