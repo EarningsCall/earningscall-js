@@ -108,7 +108,7 @@ type SymbolsMethods = {
 
   removeExchangeSymbol: (exchangeSymbol: string) => void;
   // withoutSecurityNames: () => any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   toDicts: () => any[];
   toJSON: (removeSecurityNames?: boolean) => string;
   toTxtV2: () => string;
@@ -176,7 +176,6 @@ export function createSymbols(): Symbols {
   };
 }
 
-// eslint-disable-next-line functional/no-let
 let symbols: Symbols | null = null;
 
 export async function loadSymbols(): Promise<Symbols> {

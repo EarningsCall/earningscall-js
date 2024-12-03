@@ -51,7 +51,7 @@ export class Company {
   async getTranscript(
     year?: number,
     quarter?: number,
-    event?: EarningsEvent
+    event?: EarningsEvent,
   ): Promise<Transcript | undefined> {
     log.info(`Downloading audio file for ${this.companyInfo.symbol} ${event}`);
 
@@ -78,11 +78,10 @@ export class Company {
         this.companyInfo.symbol,
         year,
         quarter,
-        1
+        1,
       );
       const blah: Transcript = resp as Transcript;
       return blah;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       if (error.response?.status === 404) {
         return undefined;
@@ -114,7 +113,7 @@ export interface lookupCompanyOptions {
 }
 
 export async function lookupCompany(
-  options: lookupCompanyOptions
+  options: lookupCompanyOptions,
 ): Promise<CompanyInfo | null> {
   const { exchange, symbol } = options;
   const symbols = await loadSymbols();
@@ -122,7 +121,6 @@ export async function lookupCompany(
     return symbols.get(exchange.toUpperCase(), symbol.toUpperCase()) || null;
   }
 
-  // eslint-disable-next-line functional/no-loop-statements
   for (const exchange of EXCHANGES_IN_ORDER) {
     const info = symbols.get(exchange, symbol.toUpperCase());
     if (info) {

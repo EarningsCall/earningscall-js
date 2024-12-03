@@ -71,7 +71,7 @@ function getHeaders(): { [key: string]: string } {
 
 async function doGet(
   path: string,
-  params: Record<string, string> = {}
+  params: Record<string, string> = {},
 ): Promise<Response> {
   const finalParams = {
     ...apiKeyParam(),
@@ -106,7 +106,7 @@ async function getTranscript(
   symbol: string,
   year: number,
   quarter: number,
-  level: number | null = null
+  level: number | null = null,
 ): Promise<unknown> {
   const params = {
     ...apiKeyParam(),
