@@ -10,8 +10,9 @@
   "license": "MIT",
   "keywords": [],
   "scripts": {
+    "clean": "rimraf build coverage",
     "foo": "ts-node src/foo.ts",
-    "build": "run-p build:*",
+    "build": "run-s clean build:*",
     "build:main": "tsc -p tsconfig.json",
     "build:module": "tsc -p tsconfig.module.json",
     "fix": "run-s fix:*",
@@ -70,7 +71,8 @@
     "typescript": "^4.9.5",
     "@types/jest": "^29.5.12",
     "jest": "^29.7.0",
-    "ts-jest": "^29.1.2"
+    "ts-jest": "^29.1.2",
+    "rimraf": "^5.0.5"
   },
   "files": [
     "build/main",
