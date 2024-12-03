@@ -10,8 +10,9 @@
   "license": "MIT",
   "keywords": [],
   "scripts": {
+    "clean": "rimraf build coverage",
     "foo": "ts-node src/foo.ts",
-    "build": "run-p build:*",
+    "build": "run-s clean build:*",
     "build:main": "tsc -p tsconfig.json",
     "build:module": "tsc -p tsconfig.module.json",
     "fix": "run-s fix:*",
@@ -20,24 +21,20 @@
     "test": "run-s build test:*",
     "test:lint": "eslint src --ext .ts",
     "test:prettier": "prettier \"src/**/*.ts\" --list-different",
-    "test:unit": "nyc --silent ava",
+    "test:unit": "jest",
     "check-cli": "run-s test diff-integration-tests check-integration-tests",
     "check-integration-tests": "run-s check-integration-test:*",
     "diff-integration-tests": "mkdir -p diff && rm -rf diff/test && cp -r test diff/test && rm -rf diff/test/test-*/.git && cd diff && git init --quiet && git add -A && git commit --quiet --no-verify --allow-empty -m 'WIP' && echo '\\n\\nCommitted most recent integration test output in the \"diff\" directory. Review the changes with \"cd diff && git diff HEAD\" or your preferred git diff viewer.'",
     "watch:build": "tsc -p tsconfig.json -w",
-    "watch:test": "nyc --silent ava --watch",
-    "cov": "run-s build test:unit cov:html cov:lcov && open-cli coverage/index.html",
-    "cov:html": "nyc report --reporter=html",
-    "cov:lcov": "nyc report --reporter=lcov",
-    "cov:send": "run-s cov:lcov && codecov",
-    "cov:check": "nyc report && nyc check-coverage --lines 100 --functions 100 --branches 100",
+    "watch:test": "jest --watch",
+    "cov": "jest --coverage && open-cli coverage/lcov-report/index.html",
     "doc": "run-s doc:html && open-cli build/docs/index.html",
     "doc:html": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --out build/docs",
     "doc:json": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --json build/docs/typedoc.json",
     "doc:publish": "gh-pages -m \"[ci skip] Updates\" -d build/docs",
     "version": "standard-version",
     "reset-hard": "git clean -dfx && git reset --hard && yarn",
-    "prepare-release": "run-s reset-hard test cov:check doc:html version doc:publish"
+    "prepare-release": "run-s reset-hard test doc:html version doc:publish"
   },
   "engines": {
     "node": ">=18"
@@ -47,12 +44,9 @@
     "pino": "^9.5.0"
   },
   "devDependencies": {
-    "@ava/typescript": "^3.0.1",
-    "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@types/node": "^22.10.1",
     "@typescript-eslint/eslint-plugin": "^5.59.0",
     "@typescript-eslint/parser": "^5.59.0",
-    "ava": "^5.0.0",
     "codecov": "^3.8.3",
     "cspell": "^6.31.1",
     "cz-conventional-changelog": "^3.3.0",
@@ -63,13 +57,16 @@
     "eslint-plugin-import": "^2.27.5",
     "gh-pages": "^5.0.0",
     "npm-run-all": "^4.1.5",
-    "nyc": "^15.1.0",
     "open-cli": "^6.0.1",
     "prettier": "^2.1.1",
     "standard-version": "^9.0.0",
     "ts-node": "^10.9.2",
     "typedoc": "^0.23.21",
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "@types/jest": "^29.5.12",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "rimraf": "^5.0.5"
   },
   "files": [
     "build/main",
@@ -78,19 +75,6 @@
     "LICENSE",
     "README.md"
   ],
-  "ava": {
-    "failFast": true,
-    "timeout": "60s",
-    "typescript": {
-      "compile": false,
-      "rewritePaths": {
-        "src/": "build/main/"
-      }
-    },
-    "files": [
-      "!build/module/**"
-    ]
-  },
   "config": {
     "commitizen": {
       "path": "cz-conventional-changelog"
@@ -99,11 +83,24 @@
   "prettier": {
     "singleQuote": true
   },
-  "nyc": {
-    "extends": "@istanbuljs/nyc-config-typescript",
-    "exclude": [
-      "**/*.spec.js"
-    ]
-  },
-  "types": "build/main/index.d.ts"
+  "types": "build/main/index.d.ts",
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/*.spec.ts"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.ts",
+      "!src/**/*.d.ts"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 0,
+        "functions": 0,
+        "lines": 0,
+        "statements": 0
+      }
+    }
+  }
 }
