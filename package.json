@@ -8,7 +8,20 @@
   "module": "build/module/index.js",
   "repository": "https://github.com/EarningsCall/earningscall-js",
   "license": "MIT",
-  "keywords": [],
+  "keywords": [
+    "earnings calls",
+    "earnings call",
+    "earnings call api",
+    "earnings call transcripts",
+    "earnings call transcripts api",
+    "earnings call transcript api",
+    "earnings call app",
+    "earning call app",
+    "listen to earnings calls",
+    "where to listen to earnings calls",
+    "earnings transcript api",
+    "transcripts"
+  ],
   "scripts": {
     "clean": "rimraf build coverage",
     "foo": "ts-node src/foo.ts",
