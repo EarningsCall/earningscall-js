@@ -1,12 +1,17 @@
 const DOMAIN = 'earningscall.biz';
 const API_BASE = `https://v2.api.${DOMAIN}`;
 
-// let earningscall: any = {}; // Assuming earningscall is a global object
+let _apiKey: string | undefined;
+
+function setApiKey(apiKey: string): void {
+  _apiKey = apiKey;
+}
 
 function getApiKey(): string {
-  // if (earningscall.api_key) {
-  //   return earningscall.api_key;
-  // }
+  if (_apiKey !== undefined) {
+    return _apiKey;
+  }
+  // TODO: Support setting API Key from environment variable
   // return process.env.ECALL_API_KEY || 'demo';
   return 'demo';
 }
@@ -83,7 +88,7 @@ async function doGet(
     method: 'GET',
     headers: getHeaders(),
   });
-  console.log('doGet');
+  console.log(`doGet ${url}`);
   console.log(response);
   return response;
 }
@@ -181,6 +186,7 @@ async function getSp500CompaniesTxtFile(): Promise<string | null> {
 
 export {
   getApiKey,
+  setApiKey,
   apiKeyParam,
   isDemoAccount,
   getHeaders,
