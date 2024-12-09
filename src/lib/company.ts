@@ -15,6 +15,13 @@ import { EXCHANGES_IN_ORDER, loadSymbols } from './symbols';
 //   return false; // placeholder
 // }
 
+interface GetTranscriptOptions {
+  year?: number;
+  quarter?: number;
+  event?: EarningsEvent;
+  level?: number;
+}
+
 export class Company {
   readonly companyInfo: CompanyInfo;
   readonly name?: string;
@@ -49,39 +56,46 @@ export class Company {
   //   }
 
   async getTranscript(
-    year?: number,
-    quarter?: number,
-    event?: EarningsEvent,
+    options: GetTranscriptOptions,
   ): Promise<Transcript | undefined> {
-    log.info(`Downloading audio file for ${this.companyInfo.symbol} ${event}`);
-
     if (!this.companyInfo.exchange || !this.companyInfo.symbol) {
       return undefined;
     }
 
-    if ((!year || !quarter) && event) {
-      year = event.year;
-      quarter = event.quarter;
-    }
+    const { event } = options;
+
+    const year = options.year || event?.year;
+    const quarter = options.quarter || event?.quarter;
+    const level = options.level === undefined ? 1 : options.level;
+
+    log.info(`getTranscript for ${this.companyInfo.symbol} ${event}`);
 
     if (!year || !quarter) {
       throw new Error('Must specify either event or year and quarter');
     }
 
-    if (quarter < 1 || quarter > 4) {
-      throw new Error('Invalid level. Must be one of: {1,2,3,4}');
+    if (year < 1990 || year > 2030) {
+      throw new Error('Invalid year. Must be between 1990 and 2030');
+    }
+
+    if (quarter !== 1 && quarter !== 2 && quarter !== 3 && quarter !== 4) {
+      throw new Error('Invalid quarter. Must be one of: {1,2,3,4}');
+    }
+
+    if (level !== 1 && level !== 2 && level !== 3) {
+      throw new Error('Invalid level. Must be one of: {1,2,3}');
     }
 
     try {
-      const resp = await getTranscript(
+      const response = await getTranscript(
         this.companyInfo.exchange,
         this.companyInfo.symbol,
         year,
         quarter,
         1,
       );
-      const blah: Transcript = resp as Transcript;
-      return blah;
+      const transcript: Transcript = response as Transcript;
+      return transcript;
     } catch (error: any) {
       if (error.response?.status === 404) {
         return undefined;

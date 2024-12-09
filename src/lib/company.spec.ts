@@ -62,10 +62,30 @@ describe('company', () => {
     expect(company2.toString()).toBe('DEF Test Company Inc.');
   });
 
-  test('getCompany 2', async () => {
+  test('get transcript', async () => {
     const company = await getCompany('ABC');
 
-    const transcript = await company.getTranscript(2022, 1);
+    await expect(company.getTranscript({})).rejects.toThrow(
+      'Must specify either event or year and quarter',
+    );
+
+    await expect(
+      company.getTranscript({ year: 2022, quarter: 1, level: 5 }),
+    ).rejects.toThrow('Invalid level. Must be one of: {1,2,3}');
+
+    await expect(
+      company.getTranscript({ year: 2022, quarter: 1, level: 0 }),
+    ).rejects.toThrow('Invalid level. Must be one of: {1,2,3}');
+
+    await expect(
+      company.getTranscript({ year: 1989, quarter: 1, level: 1 }),
+    ).rejects.toThrow('Invalid year. Must be between 1990 and 2030');
+
+    await expect(
+      company.getTranscript({ year: 2031, quarter: 1, level: 1 }),
+    ).rejects.toThrow('Invalid year. Must be between 1990 and 2030');
+
+    const transcript = await company.getTranscript({ year: 2022, quarter: 1 });
 
     expect(transcript.event.year).toBe(2022);
     expect(transcript.event.quarter).toBe(1);
