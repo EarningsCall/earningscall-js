@@ -65,12 +65,13 @@ export class Company {
     const { event } = options;
 
     const year = options.year || event?.year;
-    const quarter = options.quarter || event?.quarter;
+    const quarter =
+      options.quarter === undefined ? event?.quarter : options.quarter;
     const level = options.level === undefined ? 1 : options.level;
 
     log.info(`getTranscript for ${this.companyInfo.symbol} ${event}`);
 
-    if (!year || !quarter) {
+    if (year === undefined || quarter === undefined) {
       throw new Error('Must specify either event or year and quarter');
     }
 
@@ -78,7 +79,7 @@ export class Company {
       throw new Error('Invalid year. Must be between 1990 and 2030');
     }
 
-    if (quarter !== 1 && quarter !== 2 && quarter !== 3 && quarter !== 4) {
+    if (![1, 2, 3, 4].includes(quarter)) {
       throw new Error('Invalid quarter. Must be one of: {1,2,3,4}');
     }
 
@@ -92,9 +93,17 @@ export class Company {
         this.companyInfo.symbol,
         year,
         quarter,
-        1,
+        level,
       );
       const transcript: Transcript = response as Transcript;
+      if (level === 3) {
+        transcript.speakers.forEach((speaker) => {
+          speaker.text = speaker.words?.join(' ') || '';
+        });
+      }
+      if (level >= 2 && level <= 3) {
+        transcript.text = transcript.speakers.map((spk) => spk.text).join(' ');
+      }
       return transcript;
     } catch (error: any) {
       if (error.response?.status === 404) {
