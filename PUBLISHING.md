@@ -1,6 +1,42 @@
 # How to publish the EarningsCall JavaScript library to NPM
 
-First, increment the version number in package.json.
+## Prerequisites
+
+Install Node.js and Yarn
+
+Install Yarn
+
+```
+npm install --global yarn
+```
+
+Install packages:
+
+```
+yarn install
+```
+
+## Make your Code Changes
+
+First thing is to make your code changes and commit them to the repository.
+
+## Run Tests
+
+Next, you can run tests to ensure everything is passing:
+
+```
+yarn test
+```
+
+If you want, you can see the coverage of the tests:
+
+```
+yarn cov
+```
+
+## Get Ready to Publish the New Version
+
+Next, increment the version number in package.json.  Assuming the next version is 0.0.5, you would do this:
 
 ```
 {
