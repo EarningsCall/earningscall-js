@@ -1,9 +1,9 @@
 import log from 'loglevel';
 
 import { CompanyInfo } from '../types/company.d';
-import { EarningsEvent } from '../types/event.d';
+import { EarningsEvent, EventsResponse } from '../types/event.d';
 import { Transcript } from '../types/transcript.d';
-import { getTranscript } from './api';
+import { getTranscript, getEvents } from './api';
 import { InsufficientApiAccessError } from './errors';
 
 import { EXCHANGES_IN_ORDER, loadSymbols } from './symbols';
@@ -25,35 +25,37 @@ interface GetTranscriptOptions {
 export class Company {
   readonly companyInfo: CompanyInfo;
   readonly name?: string;
-  // private readonly events_?: EarningsEvent[];
+  private events_?: EarningsEvent[];
 
   constructor(companyInfo: CompanyInfo) {
     this.companyInfo = companyInfo;
     this.name = companyInfo.name;
-    // this.events_ = undefined;
+    this.events_ = undefined;
   }
 
   toString(): string {
     return String(this.name);
   }
 
-  //   private getEvents(): EarningsEvent[] {
-  //     if (!this.companyInfo.exchange || !this.companyInfo.symbol) {
-  //       return [];
-  //     }
-  //     const rawResponse = api.getEvents(this.companyInfo.exchange, this.companyInfo.symbol);
-  //     if (!rawResponse) {
-  //       return [];
-  //     }
-  //     return rawResponse.events.map(event => EarningsEvent.fromDict(event));
-  //   }
+  private async getEvents(): Promise<EarningsEvent[]> {
+    if (!this.companyInfo.exchange || !this.companyInfo.symbol) {
+      return [];
+    }
+    const rawResponse = await getEvents(
+      this.companyInfo.exchange,
+      this.companyInfo.symbol,
+    );
+    if (!rawResponse) {
+      return [];
+    }
+    const eventsResponse = rawResponse as EventsResponse;
+    this.events_ = eventsResponse.events;
+    return this.events_;
+  }
 
-  //   events(): EarningsEvent[] {
-  //     if (!this.events_) {
-  //       this.events_ = this.getEvents();
-  //     }
-  //     return this.events_;
-  //   }
+  async events(): Promise<EarningsEvent[]> {
+    return await this.getEvents();
+  }
 
   async getTranscript(
     options: GetTranscriptOptions,

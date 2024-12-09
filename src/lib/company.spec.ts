@@ -4,6 +4,52 @@ import { getCompany } from './company';
 const symbolsResponseText =
   '1\tABC\tABC Test Company Inc.\t9\t30\n1\tDEF\tDEF Test Company Inc.\t9\t122';
 
+const eventsResponseJson = {
+  company_name: 'Apple Inc.',
+  events: [
+    {
+      year: 2024,
+      quarter: 4,
+      conference_date: '2024-10-31T17:00:00.000-04:00',
+    },
+    {
+      year: 2024,
+      quarter: 3,
+      conference_date: '2024-08-01T17:00:00.000-04:00',
+    },
+    {
+      year: 2024,
+      quarter: 2,
+      conference_date: '2024-05-02T17:00:00.000-04:00',
+    },
+    {
+      year: 2024,
+      quarter: 1,
+      conference_date: '2024-02-01T17:00:00.000-05:00',
+    },
+    {
+      year: 2023,
+      quarter: 4,
+      conference_date: '2023-11-03T17:00:00.000-04:00',
+    },
+    {
+      year: 2023,
+      quarter: 3,
+      conference_date: '2023-08-03T17:00:00.000-04:00',
+    },
+    {
+      year: 2023,
+      quarter: 2,
+      conference_date: '2023-05-04T14:00:00.000-07:00',
+    },
+    {
+      year: 2023,
+      quarter: 1,
+      conference_date: '2023-02-02T17:00:00.000-05:00',
+    },
+  ],
+};
+
 const transcriptResponseJson = {
   event: {
     year: 2022,
@@ -106,6 +152,17 @@ beforeAll(() => {
 
     if (
       url ===
+      'https://v2.api.earningscall.biz/events?apikey=demo&exchange=NASDAQ&symbol=ABC'
+    ) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => eventsResponseJson,
+      });
+    }
+
+    if (
+      url ===
       'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1'
     ) {
       return Promise.resolve({
@@ -160,6 +217,15 @@ describe('company', () => {
     expect(company2.companyInfo.sector).toBe('Technology');
     expect(company2.companyInfo.industry).toBe('Software - Infrastructure');
     expect(company2.toString()).toBe('DEF Test Company Inc.');
+  });
+
+  test('get events', async () => {
+    const company = await getCompany('ABC');
+    const events = await company.events();
+    expect(events.length).toEqual(8);
+    expect(events[0].year).toEqual(2024);
+    expect(events[0].quarter).toEqual(4);
+    expect(events[0].conference_date).toEqual('2024-10-31T17:00:00.000-04:00');
   });
 
   test('get transcript', async () => {

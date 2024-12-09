@@ -4,3 +4,8 @@ export type EarningsEvent = {
   conference_date: string;
   // Add other event properties as needed
 };
+
+export type EventsResponse = {
+  company_name: string;
+  events: EarningsEvent[];
+};
