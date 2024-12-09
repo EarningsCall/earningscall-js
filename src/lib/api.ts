@@ -71,7 +71,7 @@ function getHeaders(): { [key: string]: string } {
 
 async function doGet(
   path: string,
-  params: Record<string, string> = {}
+  params: Record<string, string> = {},
 ): Promise<Response> {
   const finalParams = {
     ...apiKeyParam(),
@@ -79,10 +79,13 @@ async function doGet(
   };
   const queryParams = new URLSearchParams(finalParams).toString();
   const url = `${API_BASE}/${path}?${queryParams}`;
-  return fetch(url, {
+  const response = await fetch(url, {
     method: 'GET',
     headers: getHeaders(),
   });
+  console.log('doGet');
+  console.log(response);
+  return response;
 }
 
 async function getEvents(exchange: string, symbol: string): Promise<unknown> {
@@ -103,7 +106,7 @@ async function getTranscript(
   symbol: string,
   year: number,
   quarter: number,
-  level: number | null = null
+  level: number | null = null,
 ): Promise<unknown> {
   const params = {
     ...apiKeyParam(),

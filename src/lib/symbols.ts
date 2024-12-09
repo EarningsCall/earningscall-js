@@ -9,7 +9,7 @@ import {
 } from './sectors';
 
 // WARNING: Add new indexes to the *END* of this list
-const EXCHANGES_IN_ORDER = [
+export const EXCHANGES_IN_ORDER = [
   'NYSE',
   'NASDAQ',
   'AMEX',
@@ -82,11 +82,11 @@ export function createCompanyInfo(data: CompanyInfoData = {}): CompanyInfo & {
       data.name || '',
     ],
     toTxtV2Row: () => [
-      String(exchangeToIndex(data.exchange)),
+      String(exchangeToIndex(data.exchange || '')),
       data.symbol || '',
       data.name || '',
-      String(sectorToIndex(data.sector)),
-      String(industryToIndex(data.industry)),
+      String(sectorToIndex(data.sector || '')),
+      String(industryToIndex(data.industry || '')),
     ],
     exchangeSymbol: () => `${data.exchange}_${data.symbol}`,
   };
@@ -94,22 +94,21 @@ export function createCompanyInfo(data: CompanyInfoData = {}): CompanyInfo & {
 
 type SymbolsData = {
   exchanges: Set<string>;
-  byName: Map<string, Set<CompanyInfo>>;
+  byName: Map<string, CompanyInfo>;
   byExchangeAndSym: Map<string, CompanyInfo>;
   size: number;
 };
 
 type SymbolsMethods = {
-  // eslint-disable-next-line functional/no-return-void
   add: (sym: CompanyInfo) => void;
   getAll: () => IterableIterator<CompanyInfo>;
-  get: (exchange: string, symbol: string) => CompanyInfo;
-  getExchangeSymbol: (exchangeSymbol: string) => CompanyInfo;
+  get: (exchange: string, symbol: string) => CompanyInfo | undefined;
+  getExchangeSymbol: (exchangeSymbol: string) => CompanyInfo | undefined;
   lookupCompany: (symbol: string) => CompanyInfo | null;
-  // eslint-disable-next-line functional/no-return-void
+
   removeExchangeSymbol: (exchangeSymbol: string) => void;
   // withoutSecurityNames: () => any[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   toDicts: () => any[];
   toJSON: (removeSecurityNames?: boolean) => string;
   toTxtV2: () => string;
@@ -120,13 +119,15 @@ type Symbols = SymbolsData & SymbolsMethods;
 
 export function createSymbols(): Symbols {
   const exchanges = new Set<string>();
-  const byName = new Map<string, Set<CompanyInfo>>();
+  const byName = new Map<string, CompanyInfo>();
   const byExchangeAndSym = new Map<string, CompanyInfo>();
 
-  const add = (sym: CompanyInfo) => {
-    log.info(sym);
-    // byExchangeAndSym.set(sym.exchangeSymbol(), sym);
-    // byName.set(sym.name, sym);
+  const add = (companyInfo: CompanyInfo) => {
+    log.info(companyInfo);
+    exchanges.add(companyInfo.exchange || '');
+    const exchangeSymbol = `${companyInfo.exchange}_${companyInfo.symbol}`;
+    byExchangeAndSym.set(exchangeSymbol, companyInfo);
+    byName.set(companyInfo.name || '', companyInfo);
   };
 
   const getExchangeSymbol = (exchangeSymbol: string) => {
@@ -175,33 +176,31 @@ export function createSymbols(): Symbols {
   };
 }
 
-// eslint-disable-next-line functional/no-let
 let symbols: Symbols | null = null;
 
 export async function loadSymbols(): Promise<Symbols> {
   log.debug('Loading symbols');
   const symbolsV2 = await getSymbolsV2();
-  // if (!symbolsV2) {
-  //   throw new Error('Failed to load symbols');
-  // }
+  if (!symbolsV2) {
+    throw new Error('Failed to load symbols');
+  }
   const symbols = createSymbols();
-  return symbolsV2
+  symbolsV2
     .split('\n')
     .filter((line) => line.trim())
-    .reduce((acc, line) => {
+    .forEach((line) => {
       const [exchangeIndex, symbol, name, sectorIndex, industryIndex] =
         line.split('\t');
-      acc.add(
-        createCompanyInfo({
-          exchange: indexToExchange(parseInt(exchangeIndex)),
-          symbol,
-          name,
-          sector: indexToSector(parseInt(sectorIndex)),
-          industry: indexToIndustry(parseInt(industryIndex)),
-        })
-      );
-      return acc;
-    }, symbols);
+      const companyInfo = createCompanyInfo({
+        exchange: indexToExchange(parseInt(exchangeIndex)),
+        symbol,
+        name,
+        sector: indexToSector(parseInt(sectorIndex)),
+        industry: indexToIndustry(parseInt(industryIndex)),
+      });
+      symbols.add(companyInfo);
+    });
+  return symbols;
 }
 
 export async function getSymbols(): Promise<Symbols> {
@@ -211,7 +210,6 @@ export async function getSymbols(): Promise<Symbols> {
   return symbols;
 }
 
-// eslint-disable-next-line functional/no-return-void
 export function clearSymbols(): void {
   symbols = null;
   log.info('Symbols cleared');
