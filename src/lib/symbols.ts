@@ -17,6 +17,7 @@ export const EXCHANGES_IN_ORDER = [
   'TSXV',
   'OTC',
   'LSE',
+  'CBOE',
 ];
 
 export function exchangeToIndex(exchange?: string): number {
