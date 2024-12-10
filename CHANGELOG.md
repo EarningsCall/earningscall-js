@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.0.16](https://github.com/EarningsCall/earningscall-js/compare/v0.0.15...v0.0.16) (2024-12-10)
+
+-   Add `getSP500Companies` function.
+-   Remove `loglevel` and `pino` dependencies.
+-   BREAKING CHANGE: Update `getCompany()` interface to take a `GetCompanyOptions` object.
+-   Utilize Speaker Name Map from API response to map speaker labels to their name and titles.
+
 ## [0.0.15](https://github.com/EarningsCall/earningscall-js/compare/v0.0.14...v0.0.15) (2024-12-10)
 
 -   Remove console log statements from `api` module.

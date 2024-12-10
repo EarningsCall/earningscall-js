@@ -32,7 +32,7 @@ yarn add earningscall
 
 ## Examples
 
-### Get Transcript for single Year and Quarter
+### Get Transcript for a Single Year and Quarter
 
 If you want to retrieve a specific transcript of a company for a single year and quarter, you can do so with the `getTranscript` method.
 
@@ -40,11 +40,20 @@ If you want to retrieve a specific transcript of a company for a single year and
 ```typescript
 import { getCompany } from "earningscall";
 
-console.log("Getting company info for AAPL");
-const company = await getCompany("AAPL");
-console.log(company);
+const company = await getCompany({ symbol: "AAPL" });  // Get Company object by ticker symbol "AAPL"
+const companyInfo = company.companyInfo;
+console.log(`Company name: ${companyInfo.name} Sector: ${companyInfo.sector} Industry: ${companyInfo.industry}`);
+
 const transcript = await company.getTranscript({ year: 2021, quarter: 3 });
-console.log(transcript?.text.slice(0, 100));
+console.log(`${companyInfo.symbol} Q3 2021 Transcript: "${transcript?.text.slice(0, 100)}..."`);
+```
+
+
+Output
+
+```
+Company name: Apple Inc. Sector: Technology Industry: Consumer Electronics
+AAPL Q3 2021 Transcript: "Good day, and welcome to the Apple Q3 FY 2021 Earnings Conference Call. Today's call is being recorded..."
 ```
 
 ### Get All Transcripts for a Company
@@ -54,7 +63,8 @@ Sometimes you want to retrieve all transcripts for a company.  You can do so wit
 ```typescript
 import { getCompany } from "earningscall";
 
-const company = await getCompany("AAPL");
+const company = await getCompany({ symbol: "AAPL" });
+console.log(`Getting all transcripts for: ${company.companyInfo.name}...`);
 const events = await company.events();
 for (const event of events) {
   const transcript = await company.getTranscript({ event });
@@ -62,6 +72,22 @@ for (const event of events) {
   console.log(` * Transcript Text: "${transcript?.text.slice(0, 100)}..."`);
 }
 ```
+
+Output
+
+```
+Getting all transcripts for: Apple Inc...
+* Q4 2023
+  Transcript Text: "Good day and welcome to the Apple Q4 Fiscal Year 2023 earnings conference call. Today's call is bein..."
+* Q3 2023
+  Transcript Text: "Good day and welcome to the Apple Q3 Fiscal Year 2023 earnings conference call. Today's call is bein..."
+* Q2 2023
+  Transcript Text: "At this time for opening remarks and introductions, I would like to turn the call over to Suhasini T..."
+* Q1 2023
+
+  ...
+```
+
 
 ### Get Text by Speaker
 

@@ -1,14 +1,10 @@
-import log from 'loglevel';
-
-import { CompanyInfo } from '../types/company.d';
+import { CompanyInfo, GetCompanyOptions } from '../types/company.d';
 import { EarningsEvent, EventsResponse } from '../types/event.d';
 import { Transcript } from '../types/transcript.d';
-import { getTranscript, getEvents } from './api';
+import { getTranscript, getEvents, getSp500CompaniesTxtFile } from './api';
 import { InsufficientApiAccessError } from './errors';
 
 import { EXCHANGES_IN_ORDER, loadSymbols } from './symbols';
-
-// const log = Logger.getLogger(__filename);
 
 // function isDemoAccount(): boolean {
 //   // Implementation depends on your authentication system
@@ -71,8 +67,6 @@ export class Company {
       options.quarter === undefined ? event?.quarter : options.quarter;
     const level = options.level === undefined ? 1 : options.level;
 
-    log.info(`getTranscript for ${this.companyInfo.symbol} ${event}`);
-
     if (year === undefined || quarter === undefined) {
       throw new Error('Must specify either event or year and quarter');
     }
@@ -106,6 +100,14 @@ export class Company {
       if (level >= 2 && level <= 3) {
         transcript.text = transcript.speakers.map((spk) => spk.text).join(' ');
       }
+      if (transcript.speaker_name_map_v2) {
+        for (const speaker of transcript.speakers) {
+          const speakerLabel = speaker.speaker;
+          if (transcript.speaker_name_map_v2[speakerLabel]) {
+            speaker.speaker_info = transcript.speaker_name_map_v2[speakerLabel];
+          }
+        }
+      }
       return transcript;
     } catch (error: any) {
       if (error.response?.status === 404) {
@@ -116,7 +118,6 @@ export class Company {
         const errorMessage =
           `Your plan (${planName}) does not include Audio Files. ` +
           'Upgrade your plan here: https://earningscall.biz/api-pricing';
-        log.error(errorMessage);
         throw new InsufficientApiAccessError(errorMessage);
       }
       throw error;
@@ -124,21 +125,16 @@ export class Company {
   }
 }
 
-export async function getCompany(symbol: string) {
-  const companyInfo = await lookupCompany({ symbol });
+export async function getCompany(options: GetCompanyOptions): Promise<Company> {
+  const companyInfo = await lookupCompany(options);
   if (!companyInfo) {
-    throw new Error(`Company not found: ${symbol}`);
+    throw new Error(`Symbol not found: ${options.symbol}`);
   }
   return new Company(companyInfo);
 }
 
-export interface lookupCompanyOptions {
-  symbol: string;
-  exchange?: string;
-}
-
 export async function lookupCompany(
-  options: lookupCompanyOptions,
+  options: GetCompanyOptions,
 ): Promise<CompanyInfo | null> {
   const { exchange, symbol } = options;
   const symbols = await loadSymbols();
@@ -162,4 +158,26 @@ export async function lookupCompany(
   // }
 
   // return symbolInfo || null;
+}
+
+export async function getAllCompaniesInfos(): Promise<CompanyInfo[]> {
+  const symbols = await loadSymbols();
+  return Array.from(symbols.getAll());
+}
+
+export async function getAllCompanies(): Promise<Company[]> {
+  const infos = await getAllCompaniesInfos();
+  return infos.map((info) => new Company(info));
+}
+
+export async function getSP500Companies(): Promise<Company[]> {
+  const sp500CompaniesTxtFile = await getSp500CompaniesTxtFile();
+  if (!sp500CompaniesTxtFile) {
+    return [];
+  }
+  const symbols = sp500CompaniesTxtFile.split('\n').map((line) => line.trim());
+  const companies = await Promise.all(
+    symbols.map((symbol) => getCompany({ symbol })),
+  );
+  return companies;
 }
