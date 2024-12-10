@@ -85,8 +85,8 @@ export class Company {
       throw new Error('Invalid quarter. Must be one of: {1,2,3,4}');
     }
 
-    if (level !== 1 && level !== 2 && level !== 3) {
-      throw new Error('Invalid level. Must be one of: {1,2,3}');
+    if (![1, 2, 3, 4].includes(level)) {
+      throw new Error('Invalid level. Must be one of: {1,2,3,4}');
     }
 
     try {

@@ -241,11 +241,11 @@ describe('company', () => {
 
     await expect(
       company.getTranscript({ year: 2022, quarter: 1, level: 5 }),
-    ).rejects.toThrow('Invalid level. Must be one of: {1,2,3}');
+    ).rejects.toThrow('Invalid level. Must be one of: {1,2,3,4}');
 
     await expect(
       company.getTranscript({ year: 2022, quarter: 1, level: 0 }),
-    ).rejects.toThrow('Invalid level. Must be one of: {1,2,3}');
+    ).rejects.toThrow('Invalid level. Must be one of: {1,2,3,4}');
 
     await expect(
       company.getTranscript({ year: 1989, quarter: 1, level: 1 }),
