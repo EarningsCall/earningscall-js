@@ -88,8 +88,9 @@ async function doGet(
     method: 'GET',
     headers: getHeaders(),
   });
-  console.log(`doGet ${url}`);
-  console.log(response);
+  // TODO: Find better logging solution (or simply remove)
+  // console.log(`doGet ${url}`);
+  // console.log(response);
   return response;
 }
 
