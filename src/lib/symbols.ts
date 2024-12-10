@@ -1,5 +1,4 @@
-import log from 'loglevel';
-
+import { CompanyInfo } from '../types/company';
 import { getSymbolsV2 } from './api';
 import {
   indexToIndustry,
@@ -49,15 +48,6 @@ export const securityTypePattern: { [key: string]: RegExp } = {
 };
 
 type CompanyInfoData = {
-  exchange?: string;
-  symbol?: string;
-  name?: string;
-  securityName?: string;
-  sector?: string;
-  industry?: string;
-};
-
-type CompanyInfo = {
   exchange?: string;
   symbol?: string;
   name?: string;
@@ -116,7 +106,7 @@ type SymbolsMethods = {
   [Symbol.iterator]: () => IterableIterator<CompanyInfo>;
 };
 
-type Symbols = SymbolsData & SymbolsMethods;
+export type Symbols = SymbolsData & SymbolsMethods;
 
 export function createSymbols(): Symbols {
   const exchanges = new Set<string>();
@@ -124,7 +114,6 @@ export function createSymbols(): Symbols {
   const byExchangeAndSym = new Map<string, CompanyInfo>();
 
   const add = (companyInfo: CompanyInfo) => {
-    log.info(companyInfo);
     exchanges.add(companyInfo.exchange || '');
     const exchangeSymbol = `${companyInfo.exchange}_${companyInfo.symbol}`;
     byExchangeAndSym.set(exchangeSymbol, companyInfo);
@@ -180,7 +169,6 @@ export function createSymbols(): Symbols {
 let symbols: Symbols | null = null;
 
 export async function loadSymbols(): Promise<Symbols> {
-  log.debug('Loading symbols');
   const symbolsV2 = await getSymbolsV2();
   if (!symbolsV2) {
     throw new Error('Failed to load symbols');
@@ -213,7 +201,4 @@ export async function getSymbols(): Promise<Symbols> {
 
 export function clearSymbols(): void {
   symbols = null;
-  log.info('Symbols cleared');
 }
-
-export { CompanyInfo, Symbols };

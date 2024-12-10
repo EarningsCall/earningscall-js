@@ -1,8 +1,7 @@
 export type EarningsEvent = {
   year: number;
   quarter: number;
-  conference_date: string;
-  // Add other event properties as needed
+  conference_date: string; // TODO: Should we parse this as a date object?
 };
 
 export type EventsResponse = {

@@ -40,3 +40,8 @@ export interface CompanyInfoMethods {
    */
   exchangeSymbol(): string;
 }
+
+export interface GetCompanyOptions {
+  symbol: string;
+  exchange?: string;
+}
