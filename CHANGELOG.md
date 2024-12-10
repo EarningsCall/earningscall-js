@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+
+## [0.0.17](https://github.com/EarningsCall/earningscall-js/compare/v0.0.16...v0.0.17) (2024-12-10)
+
+-   Bugfix: Don't export types from `index.ts`.
+
 ## [0.0.16](https://github.com/EarningsCall/earningscall-js/compare/v0.0.15...v0.0.16) (2024-12-10)
 
 -   Add `getSP500Companies` function.
