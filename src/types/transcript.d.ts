@@ -1,4 +1,4 @@
-import { EarningsEvent } from './event.d';
+import { EarningsEvent } from './event';
 
 export type SpeakerInfo = {
   name?: string;

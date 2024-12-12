@@ -269,10 +269,10 @@ describe('company', () => {
 
     const transcript = await company.getTranscript({ year: 2022, quarter: 1 });
 
-    expect(transcript.event.year).toBe(2022);
-    expect(transcript.event.quarter).toBe(1);
-    expect(transcript.event.conference_date).toBe('2022-01-01');
-    expect(transcript.text).toBe(
+    expect(transcript?.event?.year).toBe(2022);
+    expect(transcript?.event?.quarter).toBe(1);
+    expect(transcript?.event?.conference_date).toBe('2022-01-01');
+    expect(transcript?.text).toBe(
       'Good day and welcome to the ABC Test Company Inc. Q1 FY 2022 earnings conference call.',
     );
   });
@@ -286,16 +286,16 @@ describe('company', () => {
       level: 2,
     });
 
-    expect(transcript.event.year).toBe(2022);
-    expect(transcript.event.quarter).toBe(1);
-    expect(transcript.event.conference_date).toBe('2022-01-01');
-    expect(transcript.text).toBe(
+    expect(transcript?.event?.year).toBe(2022);
+    expect(transcript?.event?.quarter).toBe(1);
+    expect(transcript?.event?.conference_date).toBe('2022-01-01');
+    expect(transcript?.text).toBe(
       "Good day and welcome to the ABC Test Company Inc. Q1 FY 2022 earnings conference call. Today's call is being recorded. Please go ahead. Thank you. Good afternoon, and thank you for joining us. I am the awesome CEO John Smith.",
     );
-    expect(transcript.speakers[0].speaker_info?.name).toBe('Operator');
-    expect(transcript.speakers[0].speaker_info?.title).toBe('Host');
-    expect(transcript.speakers[1].speaker_info?.name).toBe('John Smith');
-    expect(transcript.speakers[1].speaker_info?.title).toBe('CEO');
+    expect(transcript?.speakers?.[0]?.speaker_info?.name).toBe('Operator');
+    expect(transcript?.speakers?.[0]?.speaker_info?.title).toBe('Host');
+    expect(transcript?.speakers?.[1]?.speaker_info?.name).toBe('John Smith');
+    expect(transcript?.speakers?.[1]?.speaker_info?.title).toBe('CEO');
   });
 
   test('get transcript level 3', async () => {
@@ -307,10 +307,10 @@ describe('company', () => {
       level: 3,
     });
 
-    expect(transcript.event.year).toBe(2022);
-    expect(transcript.event.quarter).toBe(1);
-    expect(transcript.event.conference_date).toBe('2022-01-01');
-    expect(transcript.text).toBe(
+    expect(transcript?.event?.year).toBe(2022);
+    expect(transcript?.event?.quarter).toBe(1);
+    expect(transcript?.event?.conference_date).toBe('2022-01-01');
+    expect(transcript?.text).toBe(
       'Good day and welcome to the ABC Test Company Inc. Q1 FY 2022 earnings conference call. Thank you Good afternoon and thank you for joining us I am the awesome CEO John Smith.',
     );
   });

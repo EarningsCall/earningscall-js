@@ -1,6 +1,6 @@
-import { CompanyInfo, GetCompanyOptions } from '../types/company.d';
-import { EarningsEvent, EventsResponse } from '../types/event.d';
-import { Transcript } from '../types/transcript.d';
+import { CompanyInfo, GetCompanyOptions } from '../types/company';
+import { EarningsEvent, EventsResponse } from '../types/event';
+import { Transcript } from '../types/transcript';
 import { getTranscript, getEvents, getSp500CompaniesTxtFile } from './api';
 import { InsufficientApiAccessError } from './errors';
 
@@ -93,15 +93,16 @@ export class Company {
       );
       const transcript: Transcript = response as Transcript;
       if (level === 3) {
-        transcript.speakers.forEach((speaker) => {
+        transcript.speakers?.forEach((speaker) => {
           speaker.text = speaker.words?.join(' ') || '';
         });
       }
       if (level >= 2 && level <= 3) {
-        transcript.text = transcript.speakers.map((spk) => spk.text).join(' ');
+        transcript.text =
+          transcript.speakers?.map((spk) => spk.text).join(' ') || '';
       }
       if (transcript.speaker_name_map_v2) {
-        for (const speaker of transcript.speakers) {
+        for (const speaker of transcript.speakers || []) {
           const speakerLabel = speaker.speaker;
           if (transcript.speaker_name_map_v2[speakerLabel]) {
             speaker.speaker_info = transcript.speaker_name_map_v2[speakerLabel];

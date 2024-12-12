@@ -97,6 +97,20 @@ console.log(transcriptLevel2?.speakers[0].text);
 ```
 
 
+### Get Text by Speaker with Speaker Name and Title
+
+```typescript
+const transcriptLevel2 = await company.getTranscript({ year: 2024, quarter: 2, level: 2 });
+const firstSpeaker = transcriptLevel2?.speakers[0];
+console.log(`Speaker: ${firstSpeaker?.speaker_info?.name}, ${firstSpeaker?.speaker_info?.title}`);
+console.log(`Text: ${firstSpeaker?.text}`);
+```
+
+
+### Get Word-Level Timestamps
+
+TODO: Add this
+
 ### Get Prepared Remarks and Q&A for a Single Quarter
 
 ```typescript
