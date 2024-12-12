@@ -11,9 +11,7 @@ function getApiKey(): string {
   if (_apiKey !== undefined) {
     return _apiKey;
   }
-  // TODO: Support setting API Key from environment variable
-  // return process.env.ECALL_API_KEY || 'demo';
-  return 'demo';
+  return process.env.ECALL_API_KEY || 'demo';
 }
 
 function apiKeyParam(): { apikey: string } {
