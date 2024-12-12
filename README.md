@@ -109,15 +109,61 @@ console.log(`Text: ${firstSpeaker?.text}`);
 
 ### Get Word-Level Timestamps
 
-TODO: Add this
+```typescript
+console.log("Getting company info for AAPL");
+const company = await getCompany({ symbol: "AAPL" });
+// Level 3 Transcript Data includes words and start times
+const transcriptLevel3 = await company.getTranscript({ year: 2021, quarter: 3, level: 3 });
+
+const firstSpeaker = transcriptLevel3?.speakers[0];
+if (!firstSpeaker) {
+  console.log("No speakers found in transcript");
+  return;
+}
+
+// Combine words and start times into tuples, similar to Python's zip
+const wordsAndStartTimes = firstSpeaker?.words.map((word, index) => ({
+  word,
+  startTime: firstSpeaker?.start_times[index]
+}));
+
+console.log(`Speaker: ${firstSpeaker.speaker}`);
+console.log("Words with start times:", wordsAndStartTimes);
+```
+
+Output
+
+```
+Getting company info for AAPL
+Speaker: spk11
+Words with start times: [
+  { word: 'Good', startTime: 0.049 },
+  { word: 'day,', startTime: 0.229 },
+  { word: 'and', startTime: 0.489 },
+  { word: 'welcome', startTime: 0.609 },
+  { word: 'to', startTime: 0.929 },
+  ...
+]
+```
 
 ### Get Prepared Remarks and Q&A for a Single Quarter
 
 ```typescript
+console.log("Getting company info for AAPL");
+const company = await getCompany({ symbol: "AAPL" });
 const transcriptLevel4 = await company.getTranscript({ year: 2021, quarter: 3, level: 4 });
-console.log(transcriptLevel4?.prepared_remarks.slice(0, 100));
-console.log(transcriptLevel4?.questions_and_answers.slice(0, 100));
+console.log(`${company} Q3 2021 Prepared Remarks: "${transcriptLevel4?.prepared_remarks.slice(0, 100)}..."`);
+console.log(`${company} Q3 2021 Q&A: "${transcriptLevel4?.questions_and_answers.slice(0, 100)}..."`);
 ```
+
+Output
+
+```
+Getting company info for AAPL
+Apple Inc. Q3 2021 Prepared Remarks: "Good day, and welcome to the Apple Q3 FY 2021 Earnings Conference Call. Today's call is being record..."
+Apple Inc. Q3 2021 Q&A: "Our first question comes from Katie Huberty from Morgan Stanley. Please go ahead. Hello, Katie. Your..."
+```
+
 
 ### Set API Key
 
