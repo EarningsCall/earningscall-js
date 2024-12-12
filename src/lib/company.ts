@@ -59,9 +59,7 @@ export class Company {
     if (!this.companyInfo.exchange || !this.companyInfo.symbol) {
       return undefined;
     }
-
     const { event } = options;
-
     const year = options.year || event?.year;
     const quarter =
       options.quarter === undefined ? event?.quarter : options.quarter;

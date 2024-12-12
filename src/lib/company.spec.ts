@@ -140,6 +140,18 @@ const transcriptLevel3ResponseJson = {
   ],
 };
 
+const level4Response = {
+  event: {
+    year: 2022,
+    quarter: 1,
+    conference_date: '2022-01-01',
+  },
+  prepared_remarks:
+    "Good day and welcome to the Apple Q1 FY 2022 earnings conference call. Today's call is being recorded. At this time, for opening remarks and introductions, I would like to turn the call over to Tejas Ghala, Director of Investor Relations and Corporate Finance. Please go ahead. Thank you. Good afternoon, and thank you for joining us. Speaking first today is Apple CEO Tim Cook, and he'll be followed by CFO Luca Maestri. After that, we'll open the call to questions from analysts.",
+  questions_and_answers:
+    "We'll take our first question from Katie Huberty with Morgan Stanley. Caller, please check your mute function. We're unable to hear you. Hearing no response, we'll take our next question from Wamsi Mohan with Bank of America. Yes, thank you. Your margins have clearly been very impressive. So I have one question each on product and one on services gross margins. On product gross margins, that's clearly benefiting from a very strong mix. So Tim, I'm curious,",
+};
+
 const sp500CompaniesTxtFile = 'ABC\nDEF';
 
 beforeAll(() => {
@@ -191,6 +203,16 @@ beforeAll(() => {
         ok: true,
         status: 200,
         json: () => transcriptLevel3ResponseJson,
+      });
+    }
+    if (
+      url ===
+      'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=4'
+    ) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => level4Response,
       });
     }
 
@@ -312,6 +334,26 @@ describe('company', () => {
     expect(transcript?.event?.conference_date).toBe('2022-01-01');
     expect(transcript?.text).toBe(
       'Good day and welcome to the ABC Test Company Inc. Q1 FY 2022 earnings conference call. Thank you Good afternoon and thank you for joining us I am the awesome CEO John Smith.',
+    );
+  });
+
+  test('get transcript level 4', async () => {
+    const company = await getCompany({ symbol: 'ABC' });
+
+    const transcript = await company.getTranscript({
+      year: 2022,
+      quarter: 1,
+      level: 4,
+    });
+
+    expect(transcript?.event?.year).toBe(2022);
+    expect(transcript?.event?.quarter).toBe(1);
+    expect(transcript?.event?.conference_date).toBe('2022-01-01');
+    expect(transcript?.prepared_remarks).toBe(
+      "Good day and welcome to the Apple Q1 FY 2022 earnings conference call. Today's call is being recorded. At this time, for opening remarks and introductions, I would like to turn the call over to Tejas Ghala, Director of Investor Relations and Corporate Finance. Please go ahead. Thank you. Good afternoon, and thank you for joining us. Speaking first today is Apple CEO Tim Cook, and he'll be followed by CFO Luca Maestri. After that, we'll open the call to questions from analysts.",
+    );
+    expect(transcript?.questions_and_answers).toBe(
+      "We'll take our first question from Katie Huberty with Morgan Stanley. Caller, please check your mute function. We're unable to hear you. Hearing no response, we'll take our next question from Wamsi Mohan with Bank of America. Yes, thank you. Your margins have clearly been very impressive. So I have one question each on product and one on services gross margins. On product gross margins, that's clearly benefiting from a very strong mix. So Tim, I'm curious,",
     );
   });
 
