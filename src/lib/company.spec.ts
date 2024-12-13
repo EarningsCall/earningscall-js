@@ -1,5 +1,11 @@
 import { describe, test } from '@jest/globals';
-import { getAllCompanies, getCompany, getSP500Companies } from '../index';
+import {
+  clearSymbols,
+  getAllCompanies,
+  getCompany,
+  getSP500Companies,
+  setApiKey,
+} from '../index';
 
 const symbolsResponseText =
   '1\tABC\tABC Test Company Inc.\t9\t30\n1\tDEF\tDEF Test Company Inc.\t9\t122';
@@ -177,6 +183,28 @@ beforeAll(() => {
 
     if (
       url ===
+      'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=My+Custom+API+Key'
+    ) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        text: () => Promise.resolve(symbolsResponseText),
+      });
+    }
+
+    if (
+      url ===
+      'https://v2.api.earningscall.biz/transcript?apikey=My+Custom+API+Key&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1'
+    ) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => transcriptResponseJson,
+      });
+    }
+
+    if (
+      url ===
       'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1'
     ) {
       return Promise.resolve({
@@ -226,6 +254,41 @@ beforeAll(() => {
       });
     }
 
+    if (
+      url ===
+      'https://v2.api.earningscall.biz/transcript?apikey=CUSTOM_API_KEY&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1'
+    ) {
+      return Promise.resolve({
+        ok: false,
+        status: 404,
+      });
+    }
+
+    if (
+      url ===
+      'https://v2.api.earningscall.biz/transcript?apikey=BASIC_PLAN_API_KEY&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=4'
+    ) {
+      return Promise.resolve({
+        ok: false,
+        status: 403,
+        headers: {
+          get: (key: string) => {
+            if (key.toLowerCase() === 'x-plan-name') {
+              return 'basic';
+            }
+            return undefined;
+          },
+        },
+      });
+    }
+
+    if (url === 'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=INVALID_API_KEY') {
+      return Promise.resolve({
+        ok: false,
+        status: 401,
+      });
+    }
+
     return Promise.reject(new Error(`Unhandled request: ${url}`));
   }) as jest.Mock;
 });
@@ -234,7 +297,25 @@ afterAll(() => {
   jest.restoreAllMocks();
 });
 
+beforeEach(() => {
+  setApiKey(undefined);
+  clearSymbols();
+});
+
 describe('company', () => {
+  test('getCompany non demo account throws InsufficientApiAccessError', async () => {
+    await expect(getCompany({ symbol: 'XYZ' })).rejects.toThrow(
+      '"XYZ" requires an API Key for access. To get your API Key, see: https://earningscall.biz/api-pricing',
+    );
+  });
+
+  test('getCompany with invalid api key throws NotFoundError', async () => {
+    setApiKey('INVALID_API_KEY');
+    await expect(getCompany({ symbol: 'ABC' })).rejects.toThrow(
+      'Unauthorized',
+    );
+  });
+
   test('getCompany', async () => {
     const company = await getCompany({ symbol: 'ABC' });
     expect(company.name).toBe('ABC Test Company Inc.');
@@ -259,7 +340,28 @@ describe('company', () => {
     expect(events.length).toEqual(8);
     expect(events[0].year).toEqual(2024);
     expect(events[0].quarter).toEqual(4);
-    expect(events[0].conference_date).toEqual('2024-10-31T17:00:00.000-04:00');
+    expect(events[0].conferenceDate).toEqual('2024-10-31T17:00:00.000-04:00');
+  });
+
+  test('get transcript is missing', async () => {
+    const company = await getCompany({ symbol: 'ABC' });
+    setApiKey('CUSTOM_API_KEY');
+    const transcript = await company.getTranscript({ year: 2022, quarter: 1 });
+    expect(transcript).toBeUndefined();
+  });
+
+  test('get enhanced transcript not authorized', async () => {
+    const company = await getCompany({ symbol: 'ABC' });
+    setApiKey('BASIC_PLAN_API_KEY');
+    await expect(
+      company.getTranscript({
+        year: 2022,
+        quarter: 1,
+        level: 4,
+      }),
+    ).rejects.toThrow(
+      'Your plan (basic) does not include Enhanced Transcript Data. Upgrade your plan here: https://earningscall.biz/api-pricing',
+    );
   });
 
   test('get transcript', async () => {
@@ -293,10 +395,18 @@ describe('company', () => {
 
     expect(transcript?.event?.year).toBe(2022);
     expect(transcript?.event?.quarter).toBe(1);
-    expect(transcript?.event?.conference_date).toBe('2022-01-01');
+    expect(transcript?.event?.conferenceDate).toBe('2022-01-01');
     expect(transcript?.text).toBe(
       'Good day and welcome to the ABC Test Company Inc. Q1 FY 2022 earnings conference call.',
     );
+  });
+
+  test('get transcript with api key', async () => {
+    setApiKey('My Custom API Key');
+    const company = await getCompany({ symbol: 'ABC' });
+    const transcript = await company.getTranscript({ year: 2022, quarter: 1 });
+    expect(transcript?.event.year).toBe(2022);
+    expect(transcript?.event.quarter).toBe(1);
   });
 
   test('get transcript level 2', async () => {
@@ -310,14 +420,14 @@ describe('company', () => {
 
     expect(transcript?.event?.year).toBe(2022);
     expect(transcript?.event?.quarter).toBe(1);
-    expect(transcript?.event?.conference_date).toBe('2022-01-01');
+    expect(transcript?.event?.conferenceDate).toBe('2022-01-01');
     expect(transcript?.text).toBe(
       "Good day and welcome to the ABC Test Company Inc. Q1 FY 2022 earnings conference call. Today's call is being recorded. Please go ahead. Thank you. Good afternoon, and thank you for joining us. I am the awesome CEO John Smith.",
     );
-    expect(transcript?.speakers?.[0]?.speaker_info?.name).toBe('Operator');
-    expect(transcript?.speakers?.[0]?.speaker_info?.title).toBe('Host');
-    expect(transcript?.speakers?.[1]?.speaker_info?.name).toBe('John Smith');
-    expect(transcript?.speakers?.[1]?.speaker_info?.title).toBe('CEO');
+    expect(transcript?.speakers?.[0]?.speakerInfo?.name).toBe('Operator');
+    expect(transcript?.speakers?.[0]?.speakerInfo?.title).toBe('Host');
+    expect(transcript?.speakers?.[1]?.speakerInfo?.name).toBe('John Smith');
+    expect(transcript?.speakers?.[1]?.speakerInfo?.title).toBe('CEO');
   });
 
   test('get transcript level 3', async () => {
@@ -331,7 +441,7 @@ describe('company', () => {
 
     expect(transcript?.event?.year).toBe(2022);
     expect(transcript?.event?.quarter).toBe(1);
-    expect(transcript?.event?.conference_date).toBe('2022-01-01');
+    expect(transcript?.event?.conferenceDate).toBe('2022-01-01');
     expect(transcript?.text).toBe(
       'Good day and welcome to the ABC Test Company Inc. Q1 FY 2022 earnings conference call. Thank you Good afternoon and thank you for joining us I am the awesome CEO John Smith.',
     );
@@ -348,11 +458,11 @@ describe('company', () => {
 
     expect(transcript?.event?.year).toBe(2022);
     expect(transcript?.event?.quarter).toBe(1);
-    expect(transcript?.event?.conference_date).toBe('2022-01-01');
-    expect(transcript?.prepared_remarks).toBe(
+    expect(transcript?.event?.conferenceDate).toBe('2022-01-01');
+    expect(transcript?.preparedRemarks).toBe(
       "Good day and welcome to the Apple Q1 FY 2022 earnings conference call. Today's call is being recorded. At this time, for opening remarks and introductions, I would like to turn the call over to Tejas Ghala, Director of Investor Relations and Corporate Finance. Please go ahead. Thank you. Good afternoon, and thank you for joining us. Speaking first today is Apple CEO Tim Cook, and he'll be followed by CFO Luca Maestri. After that, we'll open the call to questions from analysts.",
     );
-    expect(transcript?.questions_and_answers).toBe(
+    expect(transcript?.questionsAndAnswers).toBe(
       "We'll take our first question from Katie Huberty with Morgan Stanley. Caller, please check your mute function. We're unable to hear you. Hearing no response, we'll take our next question from Wamsi Mohan with Bank of America. Yes, thank you. Your margins have clearly been very impressive. So I have one question each on product and one on services gross margins. On product gross margins, that's clearly benefiting from a very strong mix. So Tim, I'm curious,",
     );
   });
@@ -368,5 +478,19 @@ describe('company', () => {
   test('getSP500Companies', async () => {
     const companies = await getSP500Companies();
     expect(companies.length).toBe(2);
+  });
+
+  test("casting type with missing value doesn't throw runtime error", () => {
+    type ExampleTestTypeWithOptionalAndNonOptionalParams = {
+      exchange?: string;
+      symbol: string;
+    };
+    const rawData = {
+      exchange: 'NASDAQ',
+    };
+    const convertedData =
+      rawData as ExampleTestTypeWithOptionalAndNonOptionalParams;
+    expect(convertedData.exchange).toBe('NASDAQ');
+    expect(convertedData.symbol).toBeUndefined();
   });
 });

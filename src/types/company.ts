@@ -3,8 +3,8 @@
  * symbol, name, and classification details.
  */
 export type CompanyInfo = {
-  exchange?: string;
-  symbol?: string;
+  exchange: string;
+  symbol: string;
   name?: string;
   security_name?: string;
   sector?: string;
@@ -44,4 +44,9 @@ export interface CompanyInfoMethods {
 export interface GetCompanyOptions {
   symbol: string;
   exchange?: string;
+}
+
+export interface GetAudioFileOptions {
+  year: number;
+  quarter: number;
 }

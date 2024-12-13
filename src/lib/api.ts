@@ -1,24 +1,36 @@
+import fs from 'fs';
+import { LIB_VERSION } from './version';
+import {
+  BadRequestError,
+  InsufficientApiAccessError,
+  InternalServerError,
+  NotFoundError,
+  TooManyRequestsError,
+  UnauthorizedError,
+  UnexpectedError,
+} from './errors';
+
 const DOMAIN = 'earningscall.biz';
 const API_BASE = `https://v2.api.${DOMAIN}`;
 
 let _apiKey: string | undefined;
 
-function setApiKey(apiKey: string): void {
+export function setApiKey(apiKey: string | undefined): void {
   _apiKey = apiKey;
 }
 
-function getApiKey(): string {
+export function getApiKey(): string {
   if (_apiKey !== undefined) {
     return _apiKey;
   }
   return process.env.ECALL_API_KEY || 'demo';
 }
 
-function apiKeyParam(): { apikey: string } {
+export function apiKeyParam(): { apikey: string } {
   return { apikey: getApiKey() };
 }
 
-function isDemoAccount(): boolean {
+export function isDemoAccount(): boolean {
   return getApiKey() === 'demo';
 }
 
@@ -56,23 +68,16 @@ function isDemoAccount(): boolean {
 //   // Implement cache purging
 // }
 
-// function getEarningsCallVersion(): string | null {
-//   try {
-//     return require('../package.json').version;
-//   } catch (error) {
-//     return null;
-//   }
-// }
 
 function getHeaders(): { [key: string]: string } {
-  const earningsCallVersion = '0.0.1'; // getEarningsCallVersion();
+  const earningsCallVersion = LIB_VERSION;
   return {
     'User-Agent': `EarningsCall TypeScript/${earningsCallVersion}`,
     'X-EarningsCall-Version': earningsCallVersion || '',
   };
 }
 
-async function doGet(
+export async function doGet(
   path: string,
   params: Record<string, string> = {},
 ): Promise<Response> {
@@ -86,13 +91,37 @@ async function doGet(
     method: 'GET',
     headers: getHeaders(),
   });
-  // TODO: Find better logging solution (or simply remove)
-  // console.log(`doGet ${url}`);
-  // console.log(response);
+  if (response.status === 401) {
+    throw new UnauthorizedError('Unauthorized', response);
+  }
+  if (response.status === 404) {
+    throw new NotFoundError('Not found', response);
+  }
+  if (response.status === 403) {
+    throw new InsufficientApiAccessError('Insufficient API access', response);
+  }
+  if (response.status === 429) {
+    throw new TooManyRequestsError('Too many requests', response);
+  }
+  if (response.status === 400) {
+    throw new BadRequestError('Bad request', response);
+  }
+  if (response.status === 500) {
+    throw new InternalServerError('Internal server error', response);
+  }
+  if (response.status !== 200) {
+    throw new UnexpectedError(
+      `HTTP error! status: ${response.status}`,
+      response,
+    );
+  }
   return response;
 }
 
-async function getEvents(exchange: string, symbol: string): Promise<unknown> {
+export async function getEvents(
+  exchange: string,
+  symbol: string,
+): Promise<unknown> {
   // console.log(`get_events exchange: ${exchange} symbol: ${symbol}`);
   const params = {
     exchange,
@@ -105,7 +134,7 @@ async function getEvents(exchange: string, symbol: string): Promise<unknown> {
   return response.json();
 }
 
-async function getTranscript(
+export async function getTranscript(
   exchange: string,
   symbol: string,
   year: number,
@@ -124,7 +153,7 @@ async function getTranscript(
   return response.json();
 }
 
-async function getSymbolsV2(): Promise<string | null> {
+export async function getSymbolsV2(): Promise<string | null> {
   const response = await doGet('symbols-v2.txt', {});
   if (response.status !== 200) {
     return null;
@@ -132,7 +161,7 @@ async function getSymbolsV2(): Promise<string | null> {
   return response.text();
 }
 
-async function getSp500CompaniesTxtFile(): Promise<string | null> {
+export async function getSp500CompaniesTxtFile(): Promise<string | null> {
   // console.log('get_sp500_companies_txt_file');
   const response = await doGet('symbols/sp500.txt', {});
   if (response.status !== 200) {
@@ -141,57 +170,44 @@ async function getSp500CompaniesTxtFile(): Promise<string | null> {
   return response.text();
 }
 
-// async function downloadAudioFile(
-//   exchange: string,
-//   symbol: string,
-//   year: number,
-//   quarter: number,
-//   fileName?: string
-// ): Promise<string | null> {
-//   const params = {
-//     ...apiKeyParam(),
-//     exchange,
-//     symbol,
-//     year: year.toString(),
-//     quarter: quarter.toString(),
-//   };
-//   const localFilename =
-//     fileName || `${exchange}_${symbol}_${year}_${quarter}.mp3`;
+export async function downloadAudioFile(
+  exchange: string,
+  symbol: string,
+  year: number,
+  quarter: number,
+  fileName?: string,
+): Promise<string | null> {
+  const params = {
+    ...apiKeyParam(),
+    exchange,
+    symbol,
+    year: year.toString(),
+    quarter: quarter.toString(),
+  };
+  const localFilename =
+    fileName || `${exchange}_${symbol}_${year}_${quarter}.mp3`;
 
-//   try {
-//     const queryParams = new URLSearchParams(params).toString();
-//     const response = await fetch(`${API_BASE}/audio?${queryParams}`, {
-//       headers: getHeaders()
-//     });
+  try {
+    const queryParams = new URLSearchParams(params).toString();
+    const response = await fetch(`${API_BASE}/audio?${queryParams}`, {
+      headers: getHeaders(),
+    });
 
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-//     const writer = fs.createWriteStream(localFilename);
-//     const buffer = await response.arrayBuffer();
-//     const uint8Array = new Uint8Array(buffer);
-//     writer.write(uint8Array);
+    const writer = fs.createWriteStream(localFilename);
+    const buffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(buffer);
+    writer.write(uint8Array);
 
-//     return new Promise((resolve, reject) => {
-//       writer.on('finish', () => resolve(localFilename));
-//       writer.on('error', reject);
-//     });
-//   } catch (error) {
-//     console.error('Error downloading audio file:', error);
-//     return null;
-//   }
-// }
-
-export {
-  getApiKey,
-  setApiKey,
-  apiKeyParam,
-  isDemoAccount,
-  getHeaders,
-  doGet,
-  getEvents,
-  getTranscript,
-  getSymbolsV2,
-  getSp500CompaniesTxtFile,
-};
+    return new Promise((resolve, reject) => {
+      writer.on('finish', () => resolve(localFilename));
+      writer.on('error', reject);
+    });
+  } catch (error) {
+    console.error('Error downloading audio file:', error);
+    return null;
+  }
+}

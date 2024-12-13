@@ -1,15 +1,21 @@
-import { CompanyInfo, GetCompanyOptions } from '../types/company';
+import {
+  CompanyInfo,
+  GetAudioFileOptions,
+  GetCompanyOptions,
+} from '../types/company';
 import { EarningsEvent, EventsResponse } from '../types/event';
 import { Transcript } from '../types/transcript';
-import { getTranscript, getEvents, getSp500CompaniesTxtFile } from './api';
-import { InsufficientApiAccessError } from './errors';
+import {
+  getTranscript,
+  getEvents,
+  getSp500CompaniesTxtFile,
+  downloadAudioFile,
+  isDemoAccount,
+} from './api';
+import { camelCaseKeys } from './camel-case';
+import { InsufficientApiAccessError, MissingApiKeyError, NotFoundError } from './errors';
 
-import { EXCHANGES_IN_ORDER, loadSymbols } from './symbols';
-
-// function isDemoAccount(): boolean {
-//   // Implementation depends on your authentication system
-//   return false; // placeholder
-// }
+import { EXCHANGES_IN_ORDER, getSymbols } from './symbols';
 
 interface GetTranscriptOptions {
   year?: number;
@@ -44,7 +50,9 @@ export class Company {
     if (!rawResponse) {
       return [];
     }
-    const eventsResponse = rawResponse as EventsResponse;
+    const responseAsRecord = rawResponse as Record<string, unknown>;
+    const snakeCasedObject = camelCaseKeys(responseAsRecord, { deep: true });
+    const eventsResponse = snakeCasedObject as EventsResponse;
     this.events_ = eventsResponse.events;
     return this.events_;
   }
@@ -89,7 +97,10 @@ export class Company {
         quarter,
         level,
       );
-      const transcript: Transcript = response as Transcript;
+
+      const responseAsRecord = response as Record<string, unknown>;
+      const snakeCasedObject = camelCaseKeys(responseAsRecord, { deep: true });
+      const transcript = snakeCasedObject as Transcript;
       if (level === 3) {
         transcript.speakers?.forEach((speaker) => {
           speaker.text = speaker.words?.join(' ') || '';
@@ -99,28 +110,42 @@ export class Company {
         transcript.text =
           transcript.speakers?.map((spk) => spk.text).join(' ') || '';
       }
-      if (transcript.speaker_name_map_v2) {
+      if (level === 4) {
+        transcript.text = `${transcript.preparedRemarks} ${transcript.questionsAndAnswers}`;
+      }
+      if (transcript.speakerNameMapV2) {
         for (const speaker of transcript.speakers || []) {
           const speakerLabel = speaker.speaker;
-          if (transcript.speaker_name_map_v2[speakerLabel]) {
-            speaker.speaker_info = transcript.speaker_name_map_v2[speakerLabel];
+          if (transcript.speakerNameMapV2[speakerLabel]) {
+            speaker.speakerInfo = transcript.speakerNameMapV2[speakerLabel];
           }
         }
       }
       return transcript;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        return undefined;
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        return undefined; // Transcript not found
       }
-      if (error.response?.status === 403) {
-        const planName = error.response.headers['X-Plan-Name'];
-        const errorMessage =
-          `Your plan (${planName}) does not include Audio Files. ` +
-          'Upgrade your plan here: https://earningscall.biz/api-pricing';
-        throw new InsufficientApiAccessError(errorMessage);
+      if (error instanceof InsufficientApiAccessError) {
+        const planName = error.response.headers.get('X-Plan-Name');
+        throw new InsufficientApiAccessError(
+          `Your plan (${planName}) does not include Enhanced Transcript Data. Upgrade your plan here: https://earningscall.biz/api-pricing`,
+          error.response,
+        );
       }
       throw error;
     }
+  }
+
+  async getAudioFile(options: GetAudioFileOptions) {
+    const { year, quarter } = options;
+    const response = await downloadAudioFile(
+      this.companyInfo.exchange!,
+      this.companyInfo.symbol!,
+      year,
+      quarter,
+    );
+    return response;
   }
 }
 
@@ -136,7 +161,7 @@ export async function lookupCompany(
   options: GetCompanyOptions,
 ): Promise<CompanyInfo | null> {
   const { exchange, symbol } = options;
-  const symbols = await loadSymbols();
+  const symbols = await getSymbols();
   if (exchange) {
     return symbols.get(exchange.toUpperCase(), symbol.toUpperCase()) || null;
   }
@@ -147,20 +172,19 @@ export async function lookupCompany(
       return info;
     }
   }
+
+  if (isDemoAccount()) {
+    throw new MissingApiKeyError(
+      `"${symbol}" requires an API Key for access. To get your API Key, ` +
+        'see: https://earningscall.biz/api-pricing',
+    );
+  }
+
   return null;
-
-  // if (isDemoAccount() && !symbolInfo) {
-  //   throw new InsufficientApiAccessError(
-  //     `"${symbol}" requires an API Key for access. To get your API Key, ` +
-  //       'see: https://earningscall.biz/api-pricing'
-  //   );
-  // }
-
-  // return symbolInfo || null;
 }
 
 export async function getAllCompaniesInfos(): Promise<CompanyInfo[]> {
-  const symbols = await loadSymbols();
+  const symbols = await getSymbols();
   return Array.from(symbols.getAll());
 }
 
