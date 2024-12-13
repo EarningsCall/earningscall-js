@@ -13,7 +13,11 @@ import {
   isDemoAccount,
 } from './api';
 import { camelCaseKeys } from './camel-case';
-import { InsufficientApiAccessError, MissingApiKeyError, NotFoundError } from './errors';
+import {
+  InsufficientApiAccessError,
+  MissingApiKeyError,
+  NotFoundError,
+} from './errors';
 
 import { EXCHANGES_IN_ORDER, getSymbols } from './symbols';
 

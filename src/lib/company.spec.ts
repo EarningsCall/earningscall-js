@@ -282,7 +282,10 @@ beforeAll(() => {
       });
     }
 
-    if (url === 'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=INVALID_API_KEY') {
+    if (
+      url ===
+      'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=INVALID_API_KEY'
+    ) {
       return Promise.resolve({
         ok: false,
         status: 401,
@@ -311,9 +314,7 @@ describe('company', () => {
 
   test('getCompany with invalid api key throws NotFoundError', async () => {
     setApiKey('INVALID_API_KEY');
-    await expect(getCompany({ symbol: 'ABC' })).rejects.toThrow(
-      'Unauthorized',
-    );
+    await expect(getCompany({ symbol: 'ABC' })).rejects.toThrow('Unauthorized');
   });
 
   test('getCompany', async () => {

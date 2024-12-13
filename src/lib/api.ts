@@ -68,7 +68,6 @@ export function isDemoAccount(): boolean {
 //   // Implement cache purging
 // }
 
-
 function getHeaders(): { [key: string]: string } {
   const earningsCallVersion = LIB_VERSION;
   return {
