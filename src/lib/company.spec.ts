@@ -510,5 +510,5 @@ describe('company', () => {
     const company = await getCompany({ symbol: 'ABC' });
     const audioFile = await company.getAudioFile({ year: 2022, quarter: 1 });
     expect(audioFile).toBeDefined();
-  }, 10000);
+  });
 });
