@@ -178,6 +178,24 @@ Apple Inc. Q3 2021 Q&A: "Our first question comes from Katie Huberty from Morgan
 ```
 
 
+### Download Audio File for a Single Quarter
+
+```typescript
+import { getCompany } from "earningscall";
+
+const company = await getCompany({ symbol: "AAPL" });
+console.log(`Downloading audio file for ${company} Q3 2021...`);
+const audioFile = await company.getAudioFile({ year: 2021, quarter: 3 });
+console.log(`Audio file downloaded to: ${audioFile}`);
+```
+
+Output
+
+```
+Downloading audio file for Apple Inc. Q3 2021...
+Audio file downloaded to: AAPL_2021_Q3.mp3
+```
+
 ### Set API Key
 
 For access to non-demo companies, you need to set an API key.
@@ -194,4 +212,62 @@ You can also set the API key in the `EARNINGSCALL_API_KEY` environment variable.
 
 
 
+### List All Companies
 
+```typescript
+import { getAllCompanies } from "earningscall";
+
+const companies = await getAllCompanies();
+console.log(companies);
+```
+
+Output
+
+```
+[
+  Company {
+    companyInfo: {
+      exchange: 'NASDAQ',
+      symbol: 'AAPL',
+      name: 'Apple Inc.',
+      sector: 'Technology',
+      industry: 'Consumer Electronics'
+    },
+    name: 'Apple Inc.',
+    events_: undefined
+  },
+  Company {
+    companyInfo: {
+      exchange: 'NASDAQ',
+      symbol: 'MSFT',
+      name: 'Microsoft Corporation',
+      sector: 'Technology',
+      industry: 'Software - Infrastructure'
+    },
+    name: 'Microsoft Corporation',
+    events_: undefined
+  }
+]
+```
+
+
+
+### List S&P 500 Companies
+
+```typescript
+import { listSP500Companies } from "earningscall";
+
+const companies = await listSP500Companies();
+console.log(companies);
+```
+
+Output
+
+```
+[
+  { symbol: 'AAPL', name: 'Apple Inc.' },
+  { symbol: 'GOOGL', name: 'Alphabet Inc.' },
+  { symbol: 'MSFT', name: 'Microsoft Corporation' },
+  ...
+]
+```

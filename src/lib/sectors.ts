@@ -161,39 +161,23 @@ export const INDUSTRIES_IN_ORDER = [
 ];
 
 export function sectorToIndex(sector: string): number {
-  try {
-    return SECTORS_IN_ORDER.indexOf(sector);
-  } catch {
-    return -1;
-  }
+  return SECTORS_IN_ORDER.indexOf(sector);
 }
 
 export function indexToSector(index: number): string {
-  if (index === -1) {
+  if (index < 0 || index >= SECTORS_IN_ORDER.length) {
     return 'Unknown';
   }
-  try {
-    return SECTORS_IN_ORDER[index];
-  } catch {
-    return 'Unknown';
-  }
+  return SECTORS_IN_ORDER[index];
 }
 
 export function indexToIndustry(index: number): string {
-  if (index === -1) {
+  if (index < 0 || index >= INDUSTRIES_IN_ORDER.length) {
     return 'Unknown';
   }
-  try {
-    return INDUSTRIES_IN_ORDER[index];
-  } catch {
-    return 'Unknown';
-  }
+  return INDUSTRIES_IN_ORDER[index];
 }
 
 export function industryToIndex(industry: string): number {
-  try {
-    return INDUSTRIES_IN_ORDER.indexOf(industry);
-  } catch {
-    return -1;
-  }
+  return INDUSTRIES_IN_ORDER.indexOf(industry);
 }

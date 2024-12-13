@@ -15,14 +15,10 @@ export const EXCHANGES_IN_ORDER = [
 ];
 
 export function indexToExchange(index: number): string {
-  if (index === -1) {
+  if (index < 0 || index >= EXCHANGES_IN_ORDER.length) {
     return 'UNKNOWN';
   }
-  try {
-    return EXCHANGES_IN_ORDER[index];
-  } catch {
-    return 'UNKNOWN';
-  }
+  return EXCHANGES_IN_ORDER[index];
 }
 
 export class Symbols {
