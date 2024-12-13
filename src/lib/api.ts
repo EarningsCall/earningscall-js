@@ -23,7 +23,9 @@ export function getApiKey(): string {
   if (_apiKey !== undefined) {
     return _apiKey;
   }
-  return process.env.ECALL_API_KEY || 'demo';
+  return (
+    process.env.ECALL_API_KEY || process.env.EARNINGSCALL_API_KEY || 'demo'
+  );
 }
 
 export function apiKeyParam(): { apikey: string } {
@@ -76,20 +78,7 @@ function getHeaders(): { [key: string]: string } {
   };
 }
 
-export async function doGet(
-  path: string,
-  params: Record<string, string> = {},
-): Promise<Response> {
-  const finalParams = {
-    ...apiKeyParam(),
-    ...params,
-  };
-  const queryParams = new URLSearchParams(finalParams).toString();
-  const url = `${API_BASE}/${path}?${queryParams}`;
-  const response = await fetch(url, {
-    method: 'GET',
-    headers: getHeaders(),
-  });
+export function handleErrorStatusCodes(response: Response) {
   if (response.status === 401) {
     throw new UnauthorizedError('Unauthorized', response);
   }
@@ -114,6 +103,23 @@ export async function doGet(
       response,
     );
   }
+}
+
+export async function doGet(
+  path: string,
+  params: Record<string, string> = {},
+): Promise<Response> {
+  const finalParams = {
+    ...apiKeyParam(),
+    ...params,
+  };
+  const queryParams = new URLSearchParams(finalParams).toString();
+  const url = `${API_BASE}/${path}?${queryParams}`;
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: getHeaders(),
+  });
+  handleErrorStatusCodes(response);
   return response;
 }
 
@@ -121,15 +127,11 @@ export async function getEvents(
   exchange: string,
   symbol: string,
 ): Promise<unknown> {
-  // console.log(`get_events exchange: ${exchange} symbol: ${symbol}`);
   const params = {
     exchange,
     symbol,
   };
   const response = await doGet('events', params);
-  if (response.status !== 200) {
-    return null;
-  }
   return response.json();
 }
 
@@ -154,18 +156,11 @@ export async function getTranscript(
 
 export async function getSymbolsV2(): Promise<string | null> {
   const response = await doGet('symbols-v2.txt', {});
-  if (response.status !== 200) {
-    return null;
-  }
   return response.text();
 }
 
 export async function getSp500CompaniesTxtFile(): Promise<string | null> {
-  // console.log('get_sp500_companies_txt_file');
   const response = await doGet('symbols/sp500.txt', {});
-  if (response.status !== 200) {
-    return null;
-  }
   return response.text();
 }
 
@@ -191,10 +186,7 @@ export async function downloadAudioFile(
     const response = await fetch(`${API_BASE}/audio?${queryParams}`, {
       headers: getHeaders(),
     });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
+    handleErrorStatusCodes(response);
 
     const writer = fs.createWriteStream(localFilename);
     const buffer = await response.arrayBuffer();
@@ -202,7 +194,7 @@ export async function downloadAudioFile(
     writer.write(uint8Array);
 
     return new Promise((resolve, reject) => {
-      writer.on('finish', () => resolve(localFilename));
+      writer.end(() => resolve(localFilename));
       writer.on('error', reject);
     });
   } catch (error) {

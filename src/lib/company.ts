@@ -143,13 +143,20 @@ export class Company {
 
   async getAudioFile(options: GetAudioFileOptions) {
     const { year, quarter } = options;
-    const response = await downloadAudioFile(
-      this.companyInfo.exchange!,
-      this.companyInfo.symbol!,
-      year,
-      quarter,
-    );
-    return response;
+    try {
+      const response = await downloadAudioFile(
+        this.companyInfo.exchange,
+        this.companyInfo.symbol,
+        year,
+        quarter,
+      );
+      return response;
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        return undefined; // Audio file not found
+      }
+      throw error;
+    }
   }
 }
 

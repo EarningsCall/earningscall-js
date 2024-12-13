@@ -45,7 +45,7 @@ const companyInfo = company.companyInfo;
 console.log(`Company name: ${companyInfo.name} Sector: ${companyInfo.sector} Industry: ${companyInfo.industry}`);
 
 const transcript = await company.getTranscript({ year: 2021, quarter: 3 });
-console.log(`${companyInfo.symbol} Q3 2021 Transcript: "${transcript?.text?.slice(0, 100)}..."`);
+console.log(`${companyInfo.symbol} Q3 2021 Transcript: "${transcript?.text.slice(0, 100)}..."`);
 ```
 
 
@@ -69,7 +69,7 @@ const events = await company.events();
 for (const event of events) {
   const transcript = await company.getTranscript({ event });
   console.log(`${company.companyInfo.symbol} Q${event.quarter} ${event.year}`);
-  console.log(` * Transcript Text: "${transcript?.text?.slice(0, 100)}..."`);
+  console.log(` * Transcript Text: "${transcript?.text.slice(0, 100)}..."`);
 }
 ```
 
@@ -92,9 +92,11 @@ Getting all transcripts for: Apple Inc...
 ### Get Text by Speaker with Speaker Name and Title
 
 ```typescript
+const company = await getCompany({ symbol: "AAPL" });
+
 const transcriptLevel2 = await company.getTranscript({ year: 2024, quarter: 2, level: 2 });
-const firstSpeaker = transcriptLevel2?.speakers[0];
-console.log(`Speaker: ${firstSpeaker?.speaker_info?.name}, ${firstSpeaker?.speaker_info?.title}`);
+const firstSpeaker = transcriptLevel2!.speakers![0];
+console.log(`Speaker: ${firstSpeaker?.speakerInfo?.name}, ${firstSpeaker?.speakerInfo?.title}`);
 console.log(`Text: ${firstSpeaker?.text}`);
 ```
 
@@ -112,16 +114,16 @@ Text: Good afternoon and welcome to the Apple Q2 fiscal year 2024 earnings confe
 const company = await getCompany({ symbol: "AAPL" });
 // Level 3 Transcript Data includes words and start times
 const transcriptLevel3 = await company.getTranscript({ year: 2021, quarter: 3, level: 3 });
-const firstSpeaker = transcriptLevel3?.speakers[0];
+const firstSpeaker = transcriptLevel3?.speakers![0];
 if (!firstSpeaker) {
   console.log("No speakers found in transcript");
   return;
 }
 const wordsAndStartTimes = firstSpeaker?.words?.map((word, index) => ({
   word,
-  startTime: firstSpeaker?.start_times[index]
+  startTime: firstSpeaker?.startTimes![index]
 }));
-console.log(`Speaker: ${firstSpeaker?.speaker_info?.name}, ${firstSpeaker?.speaker_info?.title}`);
+console.log(`Speaker: ${firstSpeaker?.speakerInfo?.name}, ${firstSpeaker?.speakerInfo?.title}`);
 console.log("Words with start times:", wordsAndStartTimes);
 ```
 
@@ -143,9 +145,10 @@ Words with start times: [
 
 ```typescript
 const company = await getCompany({ symbol: "AAPL" });
+
 const transcriptLevel4 = await company.getTranscript({ year: 2021, quarter: 3, level: 4 });
-console.log(`${company} Q3 2021 Prepared Remarks: "${transcriptLevel4?.prepared_remarks?.slice(0, 100)}..."`);
-console.log(`${company} Q3 2021 Q&A: "${transcriptLevel4?.questions_and_answers?.slice(0, 100)}..."`);
+console.log(`${company} Q3 2021 Prepared Remarks: "${transcriptLevel4?.preparedRemarks?.slice(0, 100)}..."`);
+console.log(`${company} Q3 2021 Q&A: "${transcriptLevel4?.questionsAndAnswers?.slice(0, 100)}..."`);
 ```
 
 Output
@@ -158,13 +161,17 @@ Apple Inc. Q3 2021 Q&A: "Our first question comes from Katie Huberty from Morgan
 
 ### Set API Key
 
+For access to non-demo companies, you need to set an API key.
+
 You can set the API key with the `setApiKey` method.
 
 ```typescript
 import { setApiKey } from "earningscall";
 
-setApiKey("your-secret-api-key");
+setApiKey("YOUR-SECRET-API-KEY");
 ```
+
+You can also set the API key in the `EARNINGSCALL_API_KEY` environment variable.
 
 
 
