@@ -1,10 +1,10 @@
 export type EarningsEvent = {
   year: number;
   quarter: number;
-  conference_date: string; // TODO: Should we parse this as a date object?
+  conferenceDate: string;
 };
 
 export type EventsResponse = {
-  company_name: string;
+  companyName: string;
   events: EarningsEvent[];
 };
