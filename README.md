@@ -28,6 +28,19 @@ npm install earningscall
 yarn add earningscall
 ```
 
+Start using it in your code:
+
+ESM (ECMAScript Modules)
+
+```javascript
+import { getCompany } from "earningscall";
+```
+
+CommonJS
+
+```javascript
+const { getCompany } = require('earningscall');
+```
 
 
 ## Examples
@@ -92,6 +105,8 @@ Getting all transcripts for: Apple Inc...
 ### Get Text by Speaker with Speaker Name and Title
 
 ```typescript
+import { getCompany } from "earningscall";
+
 const company = await getCompany({ symbol: "AAPL" });
 
 const transcriptLevel2 = await company.getTranscript({ year: 2024, quarter: 2, level: 2 });
@@ -111,6 +126,8 @@ Text: Good afternoon and welcome to the Apple Q2 fiscal year 2024 earnings confe
 ### Get Word-Level Timestamps
 
 ```typescript
+import { getCompany } from "earningscall";
+
 const company = await getCompany({ symbol: "AAPL" });
 // Level 3 Transcript Data includes words and start times
 const transcriptLevel3 = await company.getTranscript({ year: 2021, quarter: 3, level: 3 });
@@ -144,6 +161,8 @@ Words with start times: [
 ### Get Prepared Remarks and Q&A for a Single Quarter
 
 ```typescript
+import { getCompany } from "earningscall";
+
 const company = await getCompany({ symbol: "AAPL" });
 
 const transcriptLevel4 = await company.getTranscript({ year: 2021, quarter: 3, level: 4 });
