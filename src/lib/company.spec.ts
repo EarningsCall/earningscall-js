@@ -292,6 +292,17 @@ beforeAll(() => {
       });
     }
 
+    if (
+      url ===
+      'https://v2.api.earningscall.biz/audio?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1'
+    ) {
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        arrayBuffer: () => Promise.resolve(new Uint8Array([0, 0, 0, 0, 0])),
+      });
+    }
+
     return Promise.reject(new Error(`Unhandled request: ${url}`));
   }) as jest.Mock;
 });
@@ -493,5 +504,11 @@ describe('company', () => {
       rawData as ExampleTestTypeWithOptionalAndNonOptionalParams;
     expect(convertedData.exchange).toBe('NASDAQ');
     expect(convertedData.symbol).toBeUndefined();
+  });
+
+  test('getAudioFile', async () => {
+    const company = await getCompany({ symbol: 'ABC' });
+    const audioFile = await company.getAudioFile({ year: 2022, quarter: 1 });
+    expect(audioFile).toBeDefined();
   });
 });
