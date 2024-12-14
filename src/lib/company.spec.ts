@@ -1,3 +1,7 @@
+import * as os from 'os';
+import * as path from 'path';
+import * as fs from 'fs';
+
 import { describe, test } from '@jest/globals';
 import {
   clearSymbols,
@@ -300,6 +304,20 @@ beforeAll(() => {
         ok: true,
         status: 200,
         arrayBuffer: () => Promise.resolve(new Uint8Array([0, 0, 0, 0, 0])),
+        headers: {
+          get: (key: string) => {
+            switch (key.toLowerCase()) {
+              case 'content-length':
+                return '100';
+              case 'content-type':
+                return 'audio/mpeg';
+              case 'last-modified':
+                return '2024-01-01T00:00:00.000Z';
+              default:
+                return null;
+            }
+          },
+        },
       });
     }
 
@@ -506,9 +524,36 @@ describe('company', () => {
     expect(convertedData.symbol).toBeUndefined();
   });
 
-  test('getAudioFile', async () => {
+  test('getAudioFile with outputFilePath specified', async () => {
+    const tempFilePath = path.join(
+      os.tmpdir(),
+      `ABC_2022_q1-${Date.now()}.mp3`,
+    );
     const company = await getCompany({ symbol: 'ABC' });
-    const audioFile = await company.getAudioFile({ year: 2022, quarter: 1 });
-    expect(audioFile).toBeDefined();
+    const audioFile = await company.getAudioFile({
+      year: 2022,
+      quarter: 1,
+      outputFilePath: tempFilePath,
+    });
+    expect(audioFile.contentLength).toBe(100);
+    expect(audioFile.contentType).toBe('audio/mpeg');
+    expect(audioFile.lastModified).toBeDefined();
+    expect(audioFile.outputFilePath).toBe(tempFilePath);
+    expect(fs.existsSync(tempFilePath)).toBe(true);
+    fs.unlinkSync(tempFilePath);
+  });
+
+  test('getAudioFile without outputFilePath specified', async () => {
+    const company = await getCompany({ symbol: 'ABC' });
+    const audioFile = await company.getAudioFile({
+      year: 2022,
+      quarter: 1,
+    });
+    expect(audioFile.contentLength).toBe(100);
+    expect(audioFile.contentType).toBe('audio/mpeg');
+    expect(audioFile.lastModified).toBeDefined();
+    expect(audioFile.outputFilePath).toBeDefined();
+    expect(fs.existsSync(audioFile.outputFilePath!)).toBe(true);
+    fs.unlinkSync(audioFile.outputFilePath!);
   });
 });

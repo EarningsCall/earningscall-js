@@ -186,7 +186,7 @@ import { getCompany } from "earningscall";
 const company = await getCompany({ symbol: "AAPL" });
 console.log(`Downloading audio file for ${company} Q3 2021...`);
 const audioFile = await company.getAudioFile({ year: 2021, quarter: 3 });
-console.log(`Audio file downloaded to: ${audioFile}`);
+console.log(`Audio file downloaded to: ${audioFile.outputFilePath}`);
 ```
 
 Output

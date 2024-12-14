@@ -9,6 +9,7 @@ import {
   UnauthorizedError,
   UnexpectedError,
 } from './errors';
+import { GetAudioFileResponse } from '../types';
 
 const DOMAIN = 'earningscall.biz';
 const API_BASE = `https://v2.api.${DOMAIN}`;
@@ -169,8 +170,8 @@ export async function downloadAudioFile(
   symbol: string,
   year: number,
   quarter: number,
-  fileName?: string,
-): Promise<string | null> {
+  outputFilePath?: string,
+): Promise<GetAudioFileResponse> {
   const params = {
     ...apiKeyParam(),
     exchange,
@@ -179,26 +180,32 @@ export async function downloadAudioFile(
     quarter: quarter.toString(),
   };
   const localFilename =
-    fileName || `${exchange}_${symbol}_${year}_${quarter}.mp3`;
+    outputFilePath || `${exchange}_${symbol}_${year}_${quarter}.mp3`;
 
-  try {
-    const queryParams = new URLSearchParams(params).toString();
-    const response = await fetch(`${API_BASE}/audio?${queryParams}`, {
-      headers: getHeaders(),
-    });
-    handleErrorStatusCodes(response);
+  const queryParams = new URLSearchParams(params).toString();
+  const response = await fetch(`${API_BASE}/audio?${queryParams}`, {
+    headers: getHeaders(),
+  });
+  handleErrorStatusCodes(response);
+  const responseHeaders = response.headers;
+  const contentLength = Number(responseHeaders.get('Content-Length'));
+  const contentType = responseHeaders.get('Content-Type');
+  const lastModified = new Date(responseHeaders.get('Last-Modified') || '');
 
-    const writer = fs.createWriteStream(localFilename);
-    const buffer = await response.arrayBuffer();
-    const uint8Array = new Uint8Array(buffer);
-    writer.write(uint8Array);
+  const writer = fs.createWriteStream(localFilename);
+  const buffer = await response.arrayBuffer();
+  const uint8Array = new Uint8Array(buffer);
+  writer.write(uint8Array);
 
-    return new Promise((resolve, reject) => {
-      writer.end(() => resolve(localFilename));
-      writer.on('error', reject);
-    });
-  } catch (error) {
-    console.error('Error downloading audio file:', error);
-    return null;
-  }
+  const result: GetAudioFileResponse = {
+    outputFilePath: localFilename,
+    contentLength,
+    contentType: contentType || undefined,
+    lastModified,
+  };
+
+  return new Promise((resolve, reject) => {
+    writer.end(() => resolve(result));
+    writer.on('error', reject);
+  });
 }
