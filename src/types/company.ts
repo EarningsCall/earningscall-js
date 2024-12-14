@@ -49,4 +49,12 @@ export interface GetCompanyOptions {
 export interface GetAudioFileOptions {
   year: number;
   quarter: number;
+  outputFilePath?: string;
+}
+
+export interface GetAudioFileResponse {
+  outputFilePath?: string;
+  contentLength?: number;
+  contentType?: string;
+  lastModified?: Date;
 }

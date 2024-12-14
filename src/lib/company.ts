@@ -1,6 +1,7 @@
 import {
   CompanyInfo,
   GetAudioFileOptions,
+  GetAudioFileResponse,
   GetCompanyOptions,
 } from '../types/company';
 import { EarningsEvent, EventsResponse } from '../types/event';
@@ -141,19 +142,22 @@ export class Company {
     }
   }
 
-  async getAudioFile(options: GetAudioFileOptions) {
-    const { year, quarter } = options;
+  async getAudioFile(
+    options: GetAudioFileOptions,
+  ): Promise<GetAudioFileResponse> {
+    const { year, quarter, outputFilePath } = options;
     try {
       const response = await downloadAudioFile(
         this.companyInfo.exchange,
         this.companyInfo.symbol,
         year,
         quarter,
+        outputFilePath,
       );
       return response;
     } catch (error: unknown) {
       if (error instanceof NotFoundError) {
-        return undefined; // Audio file not found
+        return {}; // Audio file not found
       }
       throw error;
     }
