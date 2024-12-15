@@ -8,3 +8,4 @@ test
 src/**.js
 coverage
 *.log
+*.tgz
