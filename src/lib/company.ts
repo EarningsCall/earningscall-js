@@ -45,16 +45,10 @@ export class Company {
   }
 
   private async getEvents(): Promise<EarningsEvent[]> {
-    if (!this.companyInfo.exchange || !this.companyInfo.symbol) {
-      return [];
-    }
     const rawResponse = await getEvents(
       this.companyInfo.exchange,
       this.companyInfo.symbol,
     );
-    if (!rawResponse) {
-      return [];
-    }
     const responseAsRecord = rawResponse as Record<string, unknown>;
     const snakeCasedObject = camelCaseKeys(responseAsRecord, { deep: true });
     const eventsResponse = snakeCasedObject as EventsResponse;
@@ -69,9 +63,6 @@ export class Company {
   async getTranscript(
     options: GetTranscriptOptions,
   ): Promise<Transcript | undefined> {
-    if (!this.companyInfo.exchange || !this.companyInfo.symbol) {
-      return undefined;
-    }
     const { event } = options;
     const year = options.year || event?.year;
     const quarter =

@@ -37,45 +37,11 @@ export function isDemoAccount(): boolean {
   return getApiKey() === 'demo';
 }
 
-// function cacheSession() {
-//   const cache = setupCache({
-//     maxAge: 15 * 60 * 1000,
-//     exclude: { query: false },
-//     store: {
-//       set: async (key, value) => {
-//         // Implement cache storage
-//       },
-//       get: async (key) => {
-//         // Implement cache retrieval
-//       },
-//       remove: async (key) => {
-//         // Implement cache removal
-//       },
-//       clear: async () => {
-//         // Implement cache clearing
-//       },
-//     },
-//   });
-
-//   return axios.create({
-//     adapter: cache.adapter,
-//   });
-// }
-
-// function cachedUrls(): string[] {
-//   // Implement cached URLs retrieval
-//   return [];
-// }
-
-// function purgeCache(): void {
-//   // Implement cache purging
-// }
-
 function getHeaders(): { [key: string]: string } {
   const earningsCallVersion = LIB_VERSION;
   return {
     'User-Agent': `EarningsCall TypeScript/${earningsCallVersion}`,
-    'X-EarningsCall-Version': earningsCallVersion || '',
+    'X-EarningsCall-Version': earningsCallVersion,
   };
 }
 
@@ -103,7 +69,7 @@ export function handleErrorStatusCodes(response: Response) {
   }
   if (response.status !== 200) {
     throw new UnexpectedError(
-      `HTTP error! status: ${response.status}`,
+      `HTTP error status: ${response.status}`,
       response,
     );
   }
@@ -111,7 +77,7 @@ export function handleErrorStatusCodes(response: Response) {
 
 export async function doGet(
   path: string,
-  params: Record<string, string> = {},
+  params: Record<string, string>,
 ): Promise<Response> {
   const finalParams = {
     ...apiKeyParam(),
@@ -146,7 +112,7 @@ export async function getTranscript(
   symbol: string,
   year: number,
   quarter: number,
-  level: number | null = null,
+  level: number,
 ): Promise<unknown> {
   const params = {
     ...apiKeyParam(),
