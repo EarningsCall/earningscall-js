@@ -15,7 +15,7 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 5
 
     env:
       GITHUB_ACTION_RUNNER: true
@@ -78,7 +78,7 @@ jobs:
       - name: Show the build artifacts
         run: |
           ls -la build/
-      - run: npm run publish
+      - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
