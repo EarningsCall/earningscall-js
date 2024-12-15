@@ -9,8 +9,11 @@
 [![GitHub Stars](https://img.shields.io/github/stars/EarningsCall/earningscall-js.svg?style=social&label=Star)](https://github.com/EarningsCall/earningscall-js)
 [![Twitter Follow](https://img.shields.io/twitter/follow/EarningsCallApp.svg?style=social&label=Follow)](https://twitter.com/EarningsCallApp)
 
+![Typescript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+
 The EarningsCall JavaScript library provides convenient access to the [EarningsCall API](https://earningscall.biz/api-guide) from
-applications written in the JavaScript language. It includes a pre-defined set of
+applications written in the JavaScript language (with TypeScript support). It includes a pre-defined set of
 classes for API resources that initialize themselves dynamically from API
 responses.
 
