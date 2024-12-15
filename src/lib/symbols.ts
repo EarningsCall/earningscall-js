@@ -22,6 +22,10 @@ export function indexToExchange(index: number): string {
 }
 
 export class Symbols {
+  expiresDate: Date | null = null;
+  lastModified: Date | null = null;
+  cacheControlExpires: string | null = null;
+
   private exchanges = new Set<string>();
   private byName = new Map<string, CompanyInfo>();
   private byExchangeAndSym = new Map<string, CompanyInfo>();
@@ -49,13 +53,29 @@ export class Symbols {
 
 let symbols: Symbols | null = null;
 
-async function loadSymbols(): Promise<Symbols> {
-  const symbolsV2 = await getSymbolsV2();
-  if (!symbolsV2) {
-    throw new Error('Failed to load symbols');
-  }
+/**
+ * Loads the symbols from the API and returns a Symbols object.
+ *
+ * @returns {Promise<Symbols>} The Symbols object.
+ */
+export async function loadSymbols(): Promise<Symbols> {
+  const symbolsV2Response = await getSymbolsV2();
+  const responseHeaders = symbolsV2Response.headers;
+  const lastModified = new Date(responseHeaders.get('Last-Modified') || '');
+  const cacheControl = responseHeaders.get('Cache-Control');
+  const cacheControlMaxAge = cacheControl?.match(/max-age=(\d+)/)?.[1];
+  const cacheControlExpires = cacheControl?.match(/expires=(\d+)/)?.[1];
+  // By default, we cache the symbols for 1 day
+  // Otherwise, we use the Cache-Control header to determine the expiration date (max-age)
+  const expiresDate = new Date(
+    Date.now() + parseInt(cacheControlMaxAge || '86400') * 1000,
+  );
+  const symbolsV2Text = await symbolsV2Response.text();
   const symbols = new Symbols();
-  symbolsV2
+  symbols.expiresDate = expiresDate;
+  symbols.lastModified = lastModified;
+  symbols.cacheControlExpires = cacheControlExpires || null;
+  symbolsV2Text
     .split('\n')
     .filter((line) => line.trim())
     .forEach((line) => {
@@ -73,13 +93,26 @@ async function loadSymbols(): Promise<Symbols> {
   return symbols;
 }
 
+/**
+ * Returns the symbols object. If the symbols object is not loaded, it will load it.
+ *
+ * @returns {Promise<Symbols>} The Symbols object.
+ */
 export async function getSymbols(): Promise<Symbols> {
   if (!symbols) {
+    symbols = await loadSymbols();
+  }
+  if (symbols.expiresDate && symbols.expiresDate < new Date()) {
     symbols = await loadSymbols();
   }
   return symbols;
 }
 
+/**
+ * Clears the symbols object.
+ *
+ * Forces a reload of the symbols from the API next time getSymbols is called.
+ */
 export function clearSymbols(): void {
   symbols = null;
 }

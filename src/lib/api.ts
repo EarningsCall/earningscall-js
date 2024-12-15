@@ -81,22 +81,25 @@ function getHeaders(): { [key: string]: string } {
 
 export function handleErrorStatusCodes(response: Response) {
   if (response.status === 401) {
-    throw new UnauthorizedError('Unauthorized', response);
+    throw new UnauthorizedError(response);
   }
   if (response.status === 404) {
-    throw new NotFoundError('Not found', response);
+    throw new NotFoundError(response);
   }
   if (response.status === 403) {
-    throw new InsufficientApiAccessError('Insufficient API access', response);
+    throw new InsufficientApiAccessError(
+      'Insufficient API access rights',
+      response,
+    );
   }
   if (response.status === 429) {
-    throw new TooManyRequestsError('Too many requests', response);
+    throw new TooManyRequestsError(response);
   }
   if (response.status === 400) {
-    throw new BadRequestError('Bad request', response);
+    throw new BadRequestError(response);
   }
   if (response.status === 500) {
-    throw new InternalServerError('Internal server error', response);
+    throw new InternalServerError(response);
   }
   if (response.status !== 200) {
     throw new UnexpectedError(
@@ -114,8 +117,10 @@ export async function doGet(
     ...apiKeyParam(),
     ...params,
   };
-  const queryParams = new URLSearchParams(finalParams).toString();
-  const url = `${API_BASE}/${path}?${queryParams}`;
+  const url = new URL(`${API_BASE}/${path}`);
+  Object.entries(finalParams).forEach(([key, value]) => {
+    url.searchParams.set(key, value);
+  });
   const response = await fetch(url, {
     method: 'GET',
     headers: getHeaders(),
@@ -155,9 +160,9 @@ export async function getTranscript(
   return response.json();
 }
 
-export async function getSymbolsV2(): Promise<string | null> {
+export async function getSymbolsV2(): Promise<Response> {
   const response = await doGet('symbols-v2.txt', {});
-  return response.text();
+  return response;
 }
 
 export async function getSp500CompaniesTxtFile(): Promise<string | null> {
@@ -181,9 +186,11 @@ export async function downloadAudioFile(
   };
   const localFilename =
     outputFilePath || `${exchange}_${symbol}_${year}_${quarter}.mp3`;
-
-  const queryParams = new URLSearchParams(params).toString();
-  const response = await fetch(`${API_BASE}/audio?${queryParams}`, {
+  const url = new URL(`${API_BASE}/audio`);
+  Object.entries(params).forEach(([key, value]) => {
+    url.searchParams.set(key, value);
+  });
+  const response = await fetch(url, {
     headers: getHeaders(),
   });
   handleErrorStatusCodes(response);

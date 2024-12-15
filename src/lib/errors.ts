@@ -1,6 +1,6 @@
 export class ClientError extends Error {
   readonly response: Response;
-  constructor(message = 'Client error', response: Response) {
+  constructor(message: string, response: Response) {
     super(message);
     this.name = 'ClientError';
     this.response = response;
@@ -11,24 +11,24 @@ export class ClientError extends Error {
 }
 
 export class UnauthorizedError extends ClientError {
-  constructor(message = 'Unauthorized', response: Response) {
-    super(message, response);
+  constructor(response: Response) {
+    super('Unauthorized', response);
     this.name = 'UnauthorizedError';
     Object.setPrototypeOf(this, UnauthorizedError.prototype);
   }
 }
 
 export class BadRequestError extends ClientError {
-  constructor(message = 'Bad request', response: Response) {
-    super(message, response);
+  constructor(response: Response) {
+    super('Bad request', response);
     this.name = 'BadRequestError';
     Object.setPrototypeOf(this, BadRequestError.prototype);
   }
 }
 
 export class NotFoundError extends ClientError {
-  constructor(message = 'Not found', response: Response) {
-    super(message, response);
+  constructor(response: Response) {
+    super('Not found', response);
     this.name = 'NotFoundError';
 
     // This line is needed to maintain proper prototype chain in TypeScript
@@ -37,15 +37,15 @@ export class NotFoundError extends ClientError {
 }
 
 export class TooManyRequestsError extends ClientError {
-  constructor(message = 'Too many requests', response: Response) {
-    super(message, response);
+  constructor(response: Response) {
+    super('Too many requests', response);
     this.name = 'TooManyRequestsError';
     Object.setPrototypeOf(this, TooManyRequestsError.prototype);
   }
 }
 
 export class InsufficientApiAccessError extends ClientError {
-  constructor(message = 'Insufficient API access rights', response: Response) {
+  constructor(message: string, response: Response) {
     super(message, response);
     this.name = 'InsufficientApiAccessError';
 
@@ -55,7 +55,7 @@ export class InsufficientApiAccessError extends ClientError {
 }
 
 export class MissingApiKeyError extends Error {
-  constructor(message = 'Missing API key') {
+  constructor(message: string) {
     super(message);
     this.name = 'MissingApiKeyError';
 
@@ -64,15 +64,14 @@ export class MissingApiKeyError extends Error {
 }
 
 export class InternalServerError extends ClientError {
-  constructor(message = 'Internal server error', response: Response) {
-    super(message, response);
+  constructor(response: Response) {
+    super('Internal server error', response);
     this.name = 'InternalServerError';
     Object.setPrototypeOf(this, InternalServerError.prototype);
   }
 }
-
 export class UnexpectedError extends ClientError {
-  constructor(message = 'Unexpected error', response: Response) {
+  constructor(message: string, response: Response) {
     super(message, response);
     this.name = 'UnexpectedError';
     Object.setPrototypeOf(this, UnexpectedError.prototype);
