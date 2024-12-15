@@ -44,6 +44,11 @@ export class Company {
     return String(this.name);
   }
 
+  /**
+   * Get the events for the company.  Useful for getting the earnings events for a company.
+   *
+   * @returns A promise that resolves to an array of EarningsEvent objects.
+   */
   private async getEvents(): Promise<EarningsEvent[]> {
     const rawResponse = await getEvents(
       this.companyInfo.exchange,
@@ -60,6 +65,12 @@ export class Company {
     return await this.getEvents();
   }
 
+  /**
+   * Retrieve a single transcript for this company.
+   *
+   * @param options - The options for getting a transcript.
+   * @returns A promise that resolves to a Transcript object or undefined if not found.
+   */
   async getTranscript(
     options: GetTranscriptOptions,
   ): Promise<Transcript | undefined> {
@@ -133,6 +144,12 @@ export class Company {
     }
   }
 
+  /**
+   * Downloads a single audio file for this company to disk.
+   *
+   * @param options - The options for getting an audio file.
+   * @returns A promise that resolves to a GetAudioFileResponse object.
+   */
   async getAudioFile(
     options: GetAudioFileOptions,
   ): Promise<GetAudioFileResponse> {
@@ -155,6 +172,12 @@ export class Company {
   }
 }
 
+/**
+ * Get a company by symbol and optionally, exchange.
+ *
+ * @param options - The options for getting a company.
+ * @returns A promise that resolves to a Company object.
+ */
 export async function getCompany(options: GetCompanyOptions): Promise<Company> {
   const companyInfo = await lookupCompany(options);
   if (!companyInfo) {
@@ -194,11 +217,21 @@ export async function getAllCompaniesInfos(): Promise<CompanyInfo[]> {
   return Array.from(symbols.getAll());
 }
 
+/**
+ * Get all companies.
+ *
+ * @returns A promise that resolves to an array of Company objects.
+ */
 export async function getAllCompanies(): Promise<Company[]> {
   const infos = await getAllCompaniesInfos();
   return infos.map((info) => new Company(info));
 }
 
+/**
+ * Get all S&P 500 companies.
+ *
+ * @returns A promise that resolves to an array of Company objects.
+ */
 export async function getSP500Companies(): Promise<Company[]> {
   const sp500CompaniesTxtFile = await getSp500CompaniesTxtFile();
   const symbols = sp500CompaniesTxtFile.split('\n').map((line) => line.trim());
