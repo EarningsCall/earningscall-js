@@ -24,7 +24,6 @@
   ],
   "scripts": {
     "clean": "rimraf build coverage",
-    "foo": "ts-node src/foo.ts",
     "build": "run-s clean build:*",
     "build:main": "tsc -p tsconfig.json",
     "build:module": "tsc -p tsconfig.module.json",
