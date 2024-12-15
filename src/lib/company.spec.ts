@@ -163,6 +163,8 @@ const level4Response = {
 };
 
 const sp500CompaniesTxtFile = 'ABC\nDEF';
+const sp500CompaniesWithNonexistentSymbolsTxtFile =
+  'ABC\nDEF\nDOESNOTEXIST\nDOESNOTEXIST2';
 
 beforeAll(() => {
   global.fetch = jest.fn((url: URL) => {
@@ -243,6 +245,15 @@ beforeAll(() => {
           ok: true,
           status: 200,
           text: () => sp500CompaniesTxtFile,
+          headers: new Headers({}),
+        },
+      },
+      {
+        url: 'https://v2.api.earningscall.biz/symbols/sp500.txt?apikey=My+Custom+API+Key',
+        result: {
+          ok: true,
+          status: 200,
+          text: () => sp500CompaniesWithNonexistentSymbolsTxtFile,
           headers: new Headers({}),
         },
       },
@@ -332,6 +343,13 @@ describe('company', () => {
     expect(company2.companyInfo.sector).toBe('Technology');
     expect(company2.companyInfo.industry).toBe('Software - Infrastructure');
     expect(company2.toString()).toBe('DEF Test Company Inc.');
+  });
+
+  test('getCompany by symbol and exchange', async () => {
+    const company = await getCompany({ symbol: 'ABC', exchange: 'NASDAQ' });
+    expect(company.name).toBe('ABC Test Company Inc.');
+    expect(company.companyInfo.exchange).toBe('NASDAQ');
+    expect(company.companyInfo.symbol).toBe('ABC');
   });
 
   test('get events', async () => {
@@ -476,6 +494,12 @@ describe('company', () => {
   });
 
   test('getSP500Companies', async () => {
+    const companies = await getSP500Companies();
+    expect(companies.length).toBe(2);
+  });
+
+  test('getSP500Companies with nonexistent symbols', async () => {
+    setApiKey('My Custom API Key');
     const companies = await getSP500Companies();
     expect(companies.length).toBe(2);
   });

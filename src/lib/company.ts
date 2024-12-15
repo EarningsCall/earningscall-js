@@ -165,11 +165,11 @@ export async function getCompany(options: GetCompanyOptions): Promise<Company> {
 
 export async function lookupCompany(
   options: GetCompanyOptions,
-): Promise<CompanyInfo | null> {
+): Promise<CompanyInfo | undefined> {
   const { exchange, symbol } = options;
   const symbols = await getSymbols();
   if (exchange) {
-    return symbols.get(exchange.toUpperCase(), symbol.toUpperCase()) || null;
+    return symbols.get(exchange.toUpperCase(), symbol.toUpperCase());
   }
 
   for (const exchange of EXCHANGES_IN_ORDER) {
@@ -186,7 +186,7 @@ export async function lookupCompany(
     );
   }
 
-  return null;
+  return undefined;
 }
 
 export async function getAllCompaniesInfos(): Promise<CompanyInfo[]> {
@@ -202,8 +202,14 @@ export async function getAllCompanies(): Promise<Company[]> {
 export async function getSP500Companies(): Promise<Company[]> {
   const sp500CompaniesTxtFile = await getSp500CompaniesTxtFile();
   const symbols = sp500CompaniesTxtFile.split('\n').map((line) => line.trim());
-  const companies = await Promise.all(
-    symbols.map((symbol) => getCompany({ symbol })),
-  );
-  return companies;
+  const companyPromises = symbols.map(async (symbol) => {
+    try {
+      return await getCompany({ symbol });
+    } catch (error) {
+      return null;
+    }
+  });
+  const results = await Promise.all(companyPromises);
+  // Filter out null values and explicitly type as Company[]
+  return results.filter((company): company is Company => company !== null);
 }

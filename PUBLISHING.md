@@ -19,7 +19,13 @@ First thing is to make your code changes and commit them to the repository.
 Next, you can run tests to ensure everything is passing:
 
 ```
-npm run test
+npm test
+```
+
+Fix any linting errors:
+
+```
+npm run fix
 ```
 
 If you want, you can see the coverage of the tests:
