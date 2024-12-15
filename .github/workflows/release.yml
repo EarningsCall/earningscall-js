@@ -34,29 +34,17 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-      - name: Print Yarn Version
-        run: echo "Yarn version is $(yarn --version)"
-      - uses: actions/cache@v4
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
       - name: Install Dependencies
         run: |
-          yarn install --frozen-lockfile
+          npm install
       - name: Run Tests
         run: |
-          yarn test
+          npm run test
         # env:
         #   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run Code Coverage
         run: |
-          yarn cov
+          npm run cov
       - name: Coveralls
         uses: coverallsapp/github-action@v2
       - name: Store the build artifacts
@@ -81,7 +69,7 @@ jobs:
           registry-url: 'https://registry.npmjs.org'
           node-version: 22.x
 
-      - run: yarn install --frozen-lockfile
+      - run: npm install
       - name: Download all the Build Artifacts
         uses: actions/download-artifact@v4
         with:
@@ -90,7 +78,7 @@ jobs:
       - name: Show the build artifacts
         run: |
           ls -la build/
-      - run: yarn publish
+      - run: npm run publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
