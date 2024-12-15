@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.0.1](https://github.com/EarningsCall/earningscall-js/compare/v1.0.0...v1.0.1) (2024-12-15)
+
+-   Use NPM instead of Yarn.
+-   Eliminate `*.spec.ts` files from the package output (which didn't work in Yarn).
+
 ## [1.0.0](https://github.com/EarningsCall/earningscall-js/compare/v0.0.27...v1.0.0) (2024-12-15)
 
 -   Make first major release version available.
