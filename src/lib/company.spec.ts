@@ -165,17 +165,21 @@ const level4Response = {
 const sp500CompaniesTxtFile = 'ABC\nDEF';
 
 beforeAll(() => {
-  global.fetch = jest.fn((url: string) => {
-    if (url === 'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=demo') {
+  global.fetch = jest.fn((url: URL) => {
+    if (
+      url.toString() ===
+      'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=demo'
+    ) {
       return Promise.resolve({
         ok: true,
         status: 200,
         text: () => Promise.resolve(symbolsResponseText),
+        headers: new Headers({}),
       });
     }
 
     if (
-      url ===
+      url.toString() ===
       'https://v2.api.earningscall.biz/events?apikey=demo&exchange=NASDAQ&symbol=ABC'
     ) {
       return Promise.resolve({
@@ -186,138 +190,134 @@ beforeAll(() => {
     }
 
     if (
-      url ===
+      url.toString() ===
       'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=My+Custom+API+Key'
     ) {
       return Promise.resolve({
         ok: true,
         status: 200,
         text: () => Promise.resolve(symbolsResponseText),
+        headers: new Headers({}),
       });
     }
 
     if (
-      url ===
+      url.toString() ===
       'https://v2.api.earningscall.biz/transcript?apikey=My+Custom+API+Key&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1'
     ) {
       return Promise.resolve({
         ok: true,
         status: 200,
         json: () => transcriptResponseJson,
+        headers: new Headers({}),
       });
     }
 
     if (
-      url ===
+      url.toString() ===
       'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1'
     ) {
       return Promise.resolve({
         ok: true,
         status: 200,
         json: () => transcriptResponseJson,
+        headers: new Headers({}),
       });
     }
     if (
-      url ===
+      url.toString() ===
       'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=2'
     ) {
       return Promise.resolve({
         ok: true,
         status: 200,
         json: () => transcriptLevel2ResponseJson,
+        headers: new Headers({}),
       });
     }
     if (
-      url ===
+      url.toString() ===
       'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=3'
     ) {
       return Promise.resolve({
         ok: true,
         status: 200,
         json: () => transcriptLevel3ResponseJson,
+        headers: new Headers({}),
       });
     }
     if (
-      url ===
+      url.toString() ===
       'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=4'
     ) {
       return Promise.resolve({
         ok: true,
         status: 200,
         json: () => level4Response,
+        headers: new Headers({}),
       });
     }
 
     if (
-      url === 'https://v2.api.earningscall.biz/symbols/sp500.txt?apikey=demo'
+      url.toString() ===
+      'https://v2.api.earningscall.biz/symbols/sp500.txt?apikey=demo'
     ) {
       return Promise.resolve({
         ok: true,
         status: 200,
         text: () => Promise.resolve(sp500CompaniesTxtFile),
+        headers: new Headers({}),
       });
     }
 
     if (
-      url ===
+      url.toString() ===
       'https://v2.api.earningscall.biz/transcript?apikey=CUSTOM_API_KEY&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1'
     ) {
       return Promise.resolve({
         ok: false,
         status: 404,
+        headers: new Headers({}),
       });
     }
 
     if (
-      url ===
+      url.toString() ===
       'https://v2.api.earningscall.biz/transcript?apikey=BASIC_PLAN_API_KEY&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=4'
     ) {
       return Promise.resolve({
         ok: false,
         status: 403,
-        headers: {
-          get: (key: string) => {
-            if (key.toLowerCase() === 'x-plan-name') {
-              return 'basic';
-            }
-            return undefined;
-          },
-        },
+        headers: new Headers({
+          'x-plan-name': 'basic',
+        }),
       });
     }
 
     if (
-      url ===
+      url.toString() ===
       'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=INVALID_API_KEY'
     ) {
       return Promise.resolve({
         ok: false,
         status: 401,
+        headers: new Headers({}),
       });
     }
 
     if (
-      url ===
+      url.toString() ===
       'https://v2.api.earningscall.biz/audio?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1'
     ) {
       return Promise.resolve({
         ok: true,
         status: 200,
         arrayBuffer: () => Promise.resolve(new Uint8Array([0, 0, 0, 0, 0])),
-        headers: {
-          get: (key: string) => {
-            switch (key.toLowerCase()) {
-              case 'content-length':
-                return '100';
-              case 'content-type':
-                return 'audio/mpeg';
-              case 'last-modified':
-                return '2024-01-01T00:00:00.000Z';
-              default:
-                return null;
-            }
-          },
-        },
+        headers: new Headers({
+          'content-length': '100',
+          'content-type': 'audio/mpeg',
+          'last-modified': '2024-01-01T00:00:00.000Z',
+        }),
       });
     }
 
