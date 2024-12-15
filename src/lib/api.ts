@@ -131,7 +131,7 @@ export async function getSymbolsV2(): Promise<Response> {
   return response;
 }
 
-export async function getSp500CompaniesTxtFile(): Promise<string | null> {
+export async function getSp500CompaniesTxtFile(): Promise<string> {
   const response = await doGet('symbols/sp500.txt', {});
   return response.text();
 }

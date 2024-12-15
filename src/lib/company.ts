@@ -201,9 +201,6 @@ export async function getAllCompanies(): Promise<Company[]> {
 
 export async function getSP500Companies(): Promise<Company[]> {
   const sp500CompaniesTxtFile = await getSp500CompaniesTxtFile();
-  if (!sp500CompaniesTxtFile) {
-    return [];
-  }
   const symbols = sp500CompaniesTxtFile.split('\n').map((line) => line.trim());
   const companies = await Promise.all(
     symbols.map((symbol) => getCompany({ symbol })),
