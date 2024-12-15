@@ -5,14 +5,9 @@
 [![Downloads](https://img.shields.io/npm/dm/earningscall.svg)](https://www.npmjs.com/package/earningscall)
 [![Coverage Status](https://coveralls.io/repos/github/EarningsCall/earningscall-js/badge.svg?branch=master)](https://coveralls.io/github/EarningsCall/earningscall-js?branch=master)
 
-
-<a href="https://bundlejs.com/?q=earningscall&badge=" target="\_parent">
-  <img alt="" src="https://deno.bundlejs.com/?q=earningscall&badge=detailed" />
-</a><a href="https://github.com/EarningsCall/earningscall-js/" target="\_parent">
-  <img alt="" src="https://img.shields.io/github/stars/EarningsCall/earningscall-js.svg?style=social&label=Star" />
-</a><a href="https://twitter.com/EarningsCallApp" target="\_parent">
-  <img alt="" src="https://img.shields.io/twitter/follow/EarningsCallApp.svg?style=social&label=Follow" />
-</a>
+[![bundlejs](https://deno.bundlejs.com/?q=earningscall&badge=detailed)](https://bundlejs.com/?q=earningscall&badge=detailed)
+[![GitHub Stars](https://img.shields.io/github/stars/EarningsCall/earningscall-js.svg?style=social&label=Star)](https://github.com/EarningsCall/earningscall-js)
+[![Twitter Follow](https://img.shields.io/twitter/follow/EarningsCallApp.svg?style=social&label=Follow)](https://twitter.com/EarningsCallApp)
 
 The EarningsCall JavaScript library provides convenient access to the [EarningsCall API](https://earningscall.biz/api-guide) from
 applications written in the JavaScript language. It includes a pre-defined set of
