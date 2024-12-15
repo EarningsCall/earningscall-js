@@ -195,21 +195,6 @@ Downloading audio file for Apple Inc. Q3 2021...
 Audio file downloaded to: AAPL_2021_Q3.mp3
 ```
 
-### Set API Key
-
-For access to non-demo companies, you need to set an API key.
-
-You can set the API key with the `setApiKey` method.
-
-```typescript
-import { setApiKey } from "earningscall";
-
-setApiKey("YOUR-SECRET-API-KEY");
-```
-
-You can also set the API key in the `EARNINGSCALL_API_KEY` environment variable.
-
-
 
 ### List All Companies
 
@@ -249,6 +234,31 @@ Output
 ]
 ```
 
+By default, this library grants you access to only two companies, Apple Inc. and Microsoft, Inc.
+
+To gain access to 5,000+ companies please signup here to get your API key.
+
+
+Once you have access to your API key, you can set the API Key like this:
+
+
+### Set API Key
+
+For access to non-demo companies, you need to set an API key.
+
+You can set the API key with the `setApiKey` functions.
+
+```typescript
+import { setApiKey } from "earningscall";
+
+setApiKey("YOUR-SECRET-API-KEY");
+```
+
+You can also set the API key in the `EARNINGSCALL_API_KEY` environment variable.
+
+```shell
+export EARNINGSCALL_API_KEY="YOUR-SECRET-API-KEY"
+```
 
 
 ### List S&P 500 Companies
