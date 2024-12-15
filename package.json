@@ -46,7 +46,7 @@
     "doc:json": "typedoc src/ --exclude **/*.spec.ts --target ES6 --mode file --json build/docs/typedoc.json",
     "doc:publish": "gh-pages -m \"[ci skip] Updates\" -d build/docs",
     "version": "standard-version",
-    "reset-hard": "git clean -dfx && git reset --hard && yarn",
+    "reset-hard": "git clean -dfx && git reset --hard",
     "prepare-release": "run-s reset-hard test doc:html version doc:publish"
   },
   "engines": {
@@ -82,11 +82,15 @@
     "typescript": "^5.7.2"
   },
   "files": [
-    "build/main",
-    "build/module",
     "CHANGELOG.md",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "build/main/**/*.js",
+    "build/main/**/*.d.ts",
+    "build/module/**/*.js",
+    "build/module/**/*.d.ts",
+    "!build/**/*.spec.js",
+    "!build/**/*.js.map"
   ],
   "config": {
     "commitizen": {

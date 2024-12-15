@@ -27,8 +27,6 @@ Install the package with:
 
 ```sh
 npm install earningscall
-# or
-yarn add earningscall
 ```
 
 Start using it in your code:

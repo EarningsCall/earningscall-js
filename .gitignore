@@ -8,4 +8,3 @@ test
 src/**.js
 coverage
 *.log
-package-lock.json

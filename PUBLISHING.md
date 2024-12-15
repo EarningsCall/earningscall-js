@@ -2,18 +2,12 @@
 
 ## Prerequisites
 
-Install Node.js and Yarn
-
-Install Yarn
-
-```
-npm install --global yarn
-```
+Install Node.js
 
 Install packages:
 
 ```
-yarn install
+npm install
 ```
 
 ## Make your Code Changes
@@ -25,13 +19,13 @@ First thing is to make your code changes and commit them to the repository.
 Next, you can run tests to ensure everything is passing:
 
 ```
-yarn test
+npm run test
 ```
 
 If you want, you can see the coverage of the tests:
 
 ```
-yarn cov
+npm run cov
 ```
 
 ## Get Ready to Publish the New Version
