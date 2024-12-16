@@ -1,3 +1,5 @@
+import { EarningsEvent } from './event';
+
 /**
  * Represents information about a company including its exchange listing,
  * symbol, name, and classification details.
@@ -19,15 +21,24 @@ export interface GetCompanyOptions {
   exchange?: string;
 }
 
-export interface GetAudioFileOptions {
+export interface DownloadAudioFileOptions {
   year: number;
   quarter: number;
   outputFilePath?: string;
 }
 
-export interface GetAudioFileResponse {
+export interface DownloadAudioFileResponse {
   outputFilePath?: string;
   contentLength?: number;
   contentType?: string;
   lastModified?: Date;
+}
+
+export interface GetTranscriptOptions {
+  year: number;
+  quarter: number;
+}
+
+export interface GetTranscriptFromEventOptions {
+  event: EarningsEvent;
 }

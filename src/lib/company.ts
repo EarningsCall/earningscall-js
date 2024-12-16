@@ -1,11 +1,18 @@
 import {
   CompanyInfo,
-  GetAudioFileOptions,
-  GetAudioFileResponse,
+  DownloadAudioFileOptions,
+  DownloadAudioFileResponse,
   GetCompanyOptions,
+  GetTranscriptFromEventOptions,
+  GetTranscriptOptions,
 } from '../types/company';
 import { EarningsEvent, EventsResponse } from '../types/event';
-import { Transcript } from '../types/transcript';
+import {
+  BasicTranscript,
+  SpeakerGroups,
+  WordLevelTimestampsTranscript,
+  QuestionAndAnswersTranscript,
+} from '../types/transcript';
 import {
   getTranscript,
   getEvents,
@@ -21,13 +28,6 @@ import {
 } from './errors';
 
 import { EXCHANGES_IN_ORDER, getSymbols } from './symbols';
-
-interface GetTranscriptOptions {
-  year?: number;
-  quarter?: number;
-  event?: EarningsEvent;
-  level?: number;
-}
 
 export class Company {
   readonly companyInfo: CompanyInfo;
@@ -55,8 +55,8 @@ export class Company {
       this.companyInfo.symbol,
     );
     const responseAsRecord = rawResponse as Record<string, unknown>;
-    const snakeCasedObject = camelCaseKeys(responseAsRecord, { deep: true });
-    const eventsResponse = snakeCasedObject as EventsResponse;
+    const camelCasedObject = camelCaseKeys(responseAsRecord, { deep: true });
+    const eventsResponse = camelCasedObject as EventsResponse;
     this.events_ = eventsResponse.events;
     return this.events_;
   }
@@ -65,20 +65,8 @@ export class Company {
     return await this.getEvents();
   }
 
-  /**
-   * Retrieve a single transcript for this company.
-   *
-   * @param options - The options for getting a transcript.
-   * @returns A promise that resolves to a Transcript object or undefined if not found.
-   */
-  async getTranscript(
-    options: GetTranscriptOptions,
-  ): Promise<Transcript | undefined> {
-    const { event } = options;
-    const year = options.year || event?.year;
-    const quarter =
-      options.quarter === undefined ? event?.quarter : options.quarter;
-    const level = options.level === undefined ? 1 : options.level;
+  validateTranscriptOptions(options: GetTranscriptOptions) {
+    const { year, quarter } = options;
 
     if (year === undefined || quarter === undefined) {
       throw new Error('Must specify either event or year and quarter');
@@ -91,10 +79,32 @@ export class Company {
     if (![1, 2, 3, 4].includes(quarter)) {
       throw new Error('Invalid quarter. Must be one of: {1,2,3,4}');
     }
+  }
 
-    if (![1, 2, 3, 4].includes(level)) {
-      throw new Error('Invalid level. Must be one of: {1,2,3,4}');
+  getOptions(
+    options: GetTranscriptOptions | GetTranscriptFromEventOptions,
+  ): GetTranscriptOptions {
+    if ((options as GetTranscriptFromEventOptions).event !== undefined) {
+      const event = (options as GetTranscriptFromEventOptions).event;
+      const { year, quarter } = event;
+      return { year, quarter };
     }
+    const { year, quarter } = options as GetTranscriptOptions;
+    return { year, quarter };
+  }
+
+  /**
+   * Retrieve a single transcript for this company.  This is the basic transcript with no speaker groups.
+   *
+   * @param options - The options for getting a transcript.
+   * @returns A promise that resolves to a Transcript object or undefined if not found.
+   */
+  async getBasicTranscript(
+    options: GetTranscriptOptions | GetTranscriptFromEventOptions,
+  ): Promise<BasicTranscript | undefined> {
+    const transcriptOptions: GetTranscriptOptions = this.getOptions(options);
+    this.validateTranscriptOptions(transcriptOptions);
+    const { year, quarter } = transcriptOptions;
 
     try {
       const response = await getTranscript(
@@ -102,26 +112,59 @@ export class Company {
         this.companyInfo.symbol,
         year,
         quarter,
-        level,
+        1,
+      );
+      const responseAsRecord = response as Record<string, unknown>;
+      const camelCasedObject = camelCaseKeys(responseAsRecord, { deep: true });
+      const transcript = camelCasedObject as BasicTranscript;
+      return transcript;
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        return undefined; // Transcript not found
+      }
+      throw error;
+    }
+  }
+
+  handleEnhancedTranscriptDataError(error: unknown) {
+    if (error instanceof InsufficientApiAccessError) {
+      const planName = error.response.headers.get('X-Plan-Name');
+      throw new InsufficientApiAccessError(
+        `Your plan (${planName}) does not include Enhanced Transcript Data. Upgrade your plan here: https://earningscall.biz/api-pricing`,
+        error.response,
+      );
+    }
+  }
+
+  /**
+   * Retrieve a single transcript for this company with speaker groups.
+   *
+   * Requires an Enhanced Transcript Data plan.
+   *
+   * @param options - The options for getting a transcript.
+   * @returns A promise that resolves to a Transcript object or undefined if not found.
+   */
+  async getSpeakerGroups(
+    options: GetTranscriptOptions | GetTranscriptFromEventOptions,
+  ): Promise<SpeakerGroups | undefined> {
+    const transcriptOptions: GetTranscriptOptions = this.getOptions(options);
+    this.validateTranscriptOptions(transcriptOptions);
+    const { year, quarter } = transcriptOptions;
+
+    try {
+      const response = await getTranscript(
+        this.companyInfo.exchange,
+        this.companyInfo.symbol,
+        year,
+        quarter,
+        2,
       );
 
       const responseAsRecord = response as Record<string, unknown>;
-      const snakeCasedObject = camelCaseKeys(responseAsRecord, { deep: true });
-      const transcript = snakeCasedObject as Transcript;
-      if (level === 3) {
-        transcript.speakers?.forEach((speaker) => {
-          speaker.text = speaker.words?.join(' ') || '';
-        });
-      }
-      if (level >= 2 && level <= 3) {
-        transcript.text =
-          transcript.speakers?.map((spk) => spk.text).join(' ') || '';
-      }
-      if (level === 4) {
-        transcript.text = `${transcript.preparedRemarks} ${transcript.questionsAndAnswers}`;
-      }
+      const camelCasedObject = camelCaseKeys(responseAsRecord, { deep: true });
+      const transcript = camelCasedObject as SpeakerGroups;
       if (transcript.speakerNameMapV2) {
-        for (const speaker of transcript.speakers || []) {
+        for (const speaker of transcript.speakers) {
           const speakerLabel = speaker.speaker;
           if (transcript.speakerNameMapV2[speakerLabel]) {
             speaker.speakerInfo = transcript.speakerNameMapV2[speakerLabel];
@@ -133,13 +176,77 @@ export class Company {
       if (error instanceof NotFoundError) {
         return undefined; // Transcript not found
       }
-      if (error instanceof InsufficientApiAccessError) {
-        const planName = error.response.headers.get('X-Plan-Name');
-        throw new InsufficientApiAccessError(
-          `Your plan (${planName}) does not include Enhanced Transcript Data. Upgrade your plan here: https://earningscall.biz/api-pricing`,
-          error.response,
-        );
+      this.handleEnhancedTranscriptDataError(error);
+      throw error;
+    }
+  }
+
+  /**
+   * Retrieve a single transcript for this company with word level timestamps.
+   *
+   * Requires an Enhanced Transcript Data plan.
+   *
+   * @param options - The options for getting a transcript.
+   * @returns A promise that resolves to a TranscriptV3 object or undefined if not found.
+   */
+  async getWordLevelTimestamps(
+    options: GetTranscriptOptions | GetTranscriptFromEventOptions,
+  ): Promise<WordLevelTimestampsTranscript | undefined> {
+    const transcriptOptions: GetTranscriptOptions = this.getOptions(options);
+    this.validateTranscriptOptions(transcriptOptions);
+    const { year, quarter } = transcriptOptions;
+    try {
+      const response = await getTranscript(
+        this.companyInfo.exchange,
+        this.companyInfo.symbol,
+        year,
+        quarter,
+        3,
+      );
+      const responseAsRecord = response as Record<string, unknown>;
+      const camelCasedObject = camelCaseKeys(responseAsRecord, { deep: true });
+      const transcript = camelCasedObject as WordLevelTimestampsTranscript;
+      return transcript;
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        return undefined; // Transcript not found
       }
+      this.handleEnhancedTranscriptDataError(error);
+      throw error;
+    }
+  }
+
+  /**
+   * Retrieve a single transcript for this company with question and answer transcripts.
+   *
+   * Requires an Enhanced Transcript Data plan.
+   *
+   * @param options - The options for getting a transcript.
+   * @returns A promise that resolves to a TranscriptV4 object or undefined if not found.
+   */
+  async getQuestionAndAnswerTranscript(
+    options: GetTranscriptOptions | GetTranscriptFromEventOptions,
+  ): Promise<QuestionAndAnswersTranscript | undefined> {
+    const transcriptOptions: GetTranscriptOptions = this.getOptions(options);
+    this.validateTranscriptOptions(transcriptOptions);
+    const { year, quarter } = transcriptOptions;
+    try {
+      const response = await getTranscript(
+        this.companyInfo.exchange,
+        this.companyInfo.symbol,
+        year,
+        quarter,
+        4,
+      );
+      const responseAsRecord = response as Record<string, unknown>;
+      const camelCasedObject = camelCaseKeys(responseAsRecord, { deep: true });
+      const transcript = camelCasedObject as QuestionAndAnswersTranscript;
+      return transcript;
+    } catch (error: unknown) {
+      if (error instanceof NotFoundError) {
+        return undefined; // Transcript not found
+      }
+      this.handleEnhancedTranscriptDataError(error);
       throw error;
     }
   }
@@ -150,9 +257,9 @@ export class Company {
    * @param options - The options for getting an audio file.
    * @returns A promise that resolves to a GetAudioFileResponse object.
    */
-  async getAudioFile(
-    options: GetAudioFileOptions,
-  ): Promise<GetAudioFileResponse> {
+  async downloadAudioFile(
+    options: DownloadAudioFileOptions,
+  ): Promise<DownloadAudioFileResponse | undefined> {
     const { year, quarter, outputFilePath } = options;
     try {
       const response = await downloadAudioFile(
@@ -165,7 +272,7 @@ export class Company {
       return response;
     } catch (error: unknown) {
       if (error instanceof NotFoundError) {
-        return {}; // Audio file not found
+        return undefined;
       }
       throw error;
     }

@@ -9,7 +9,7 @@ import {
   UnauthorizedError,
   UnexpectedError,
 } from './errors';
-import { GetAudioFileResponse } from '../types';
+import { DownloadAudioFileResponse } from '../types';
 
 const DOMAIN = 'earningscall.biz';
 const API_BASE = `https://v2.api.${DOMAIN}`;
@@ -142,7 +142,7 @@ export async function downloadAudioFile(
   year: number,
   quarter: number,
   outputFilePath?: string,
-): Promise<GetAudioFileResponse> {
+): Promise<DownloadAudioFileResponse> {
   const params = {
     ...apiKeyParam(),
     exchange,
@@ -170,7 +170,7 @@ export async function downloadAudioFile(
   const uint8Array = new Uint8Array(buffer);
   writer.write(uint8Array);
 
-  const result: GetAudioFileResponse = {
+  const result: DownloadAudioFileResponse = {
     outputFilePath: localFilename,
     contentLength,
     contentType: contentType || undefined,
