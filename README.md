@@ -46,9 +46,9 @@ const { getCompany } = require('earningscall');
 
 ## Examples
 
-### Get Transcript for a Single Year and Quarter
+### Get Basic Transcript for a Single Year and Quarter
 
-If you want to retrieve a specific transcript of a company for a single year and quarter, you can do so with the `getTranscript` method.
+If you want to retrieve a specific transcript of a company for a single year and quarter, you can do so with the `getBasicTranscript` method.
 
 
 ```typescript
@@ -58,7 +58,7 @@ const company = await getCompany({ symbol: "AAPL" });  // Get Company object by 
 const companyInfo = company.companyInfo;
 console.log(`Company name: ${companyInfo.name} Sector: ${companyInfo.sector} Industry: ${companyInfo.industry}`);
 
-const transcript = await company.getTranscript({ year: 2021, quarter: 3 });
+const transcript = await company.getBasicTranscript({ year: 2021, quarter: 3 });
 console.log(`${companyInfo.symbol} Q3 2021 Transcript: "${transcript?.text.slice(0, 100)}..."`);
 ```
 
@@ -81,7 +81,7 @@ const company = await getCompany({ symbol: "AAPL" });
 console.log(`Getting all transcripts for: ${company.companyInfo.name}...`);
 const events = await company.events();
 for (const event of events) {
-  const transcript = await company.getTranscript({ event });
+  const transcript = await company.getBasicTranscript({ event });
   console.log(`${company.companyInfo.symbol} Q${event.quarter} ${event.year}`);
   console.log(` * Transcript Text: "${transcript?.text.slice(0, 100)}..."`);
 }
@@ -110,10 +110,10 @@ import { getCompany } from "earningscall";
 
 const company = await getCompany({ symbol: "AAPL" });
 
-const transcriptLevel2 = await company.getTranscript({ year: 2024, quarter: 2, level: 2 });
-const firstSpeaker = transcriptLevel2!.speakers![0];
-console.log(`Speaker: ${firstSpeaker?.speakerInfo?.name}, ${firstSpeaker?.speakerInfo?.title}`);
-console.log(`Text: ${firstSpeaker?.text}`);
+const speakerGroups = await company.getSpeakerGroups({ year: 2024, quarter: 2 });
+const firstSpeaker = speakerGroups!.speakers[0];
+console.log(`Speaker: ${firstSpeaker.speakerInfo?.name}, ${firstSpeaker.speakerInfo?.title}`);
+console.log(`Text: ${firstSpeaker.text}`);
 ```
 
 Output
@@ -131,12 +131,8 @@ import { getCompany } from "earningscall";
 
 const company = await getCompany({ symbol: "AAPL" });
 // Level 3 Transcript Data includes words and start times
-const transcriptLevel3 = await company.getTranscript({ year: 2021, quarter: 3, level: 3 });
-const firstSpeaker = transcriptLevel3?.speakers![0];
-if (!firstSpeaker) {
-  console.log("No speakers found in transcript");
-  return;
-}
+const transcript = await company.getWordLevelTimestamps({ year: 2021, quarter: 3 });
+const firstSpeaker = transcript?.speakers[0];
 const wordsAndStartTimes = firstSpeaker?.words?.map((word, index) => ({
   word,
   startTime: firstSpeaker?.startTimes![index]
@@ -166,9 +162,9 @@ import { getCompany } from "earningscall";
 
 const company = await getCompany({ symbol: "AAPL" });
 
-const transcriptLevel4 = await company.getTranscript({ year: 2021, quarter: 3, level: 4 });
-console.log(`${company} Q3 2021 Prepared Remarks: "${transcriptLevel4?.preparedRemarks?.slice(0, 100)}..."`);
-console.log(`${company} Q3 2021 Q&A: "${transcriptLevel4?.questionsAndAnswers?.slice(0, 100)}..."`);
+const transcript = await company.getQuestionAndAnswerTranscript({ year: 2021, quarter: 3 });
+console.log(`${company} Q3 2021 Prepared Remarks: "${transcript?.preparedRemarks.slice(0, 100)}..."`);
+console.log(`${company} Q3 2021 Q&A: "${transcript?.questionsAndAnswers.slice(0, 100)}..."`);
 ```
 
 Output
@@ -186,7 +182,7 @@ import { getCompany } from "earningscall";
 
 const company = await getCompany({ symbol: "AAPL" });
 console.log(`Downloading audio file for ${company} Q3 2021...`);
-const audioFile = await company.getAudioFile({ year: 2021, quarter: 3 });
+const audioFile = await company.downloadAudioFile({ year: 2021, quarter: 3 });
 console.log(`Audio file downloaded to: ${audioFile.outputFilePath}`);
 ```
 

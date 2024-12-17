@@ -8,11 +8,22 @@ import {
   getAllCompanies,
   getCompany,
   getSP500Companies,
+  GetTranscriptOptions,
   setApiKey,
 } from '../index';
 
 const symbolsResponseText =
   '1\tABC\tABC Test Company Inc.\t9\t30\n1\tDEF\tDEF Test Company Inc.\t9\t122';
+
+const demoSymbolsMock = {
+  url: 'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=demo',
+  result: {
+    ok: true,
+    status: 200,
+    text: () => Promise.resolve(symbolsResponseText),
+    headers: new Headers({}),
+  },
+};
 
 const eventsResponseJson = {
   company_name: 'Apple Inc.',
@@ -166,137 +177,8 @@ const sp500CompaniesTxtFile = 'ABC\nDEF';
 const sp500CompaniesWithNonexistentSymbolsTxtFile =
   'ABC\nDEF\nDOESNOTEXIST\nDOESNOTEXIST2';
 
-beforeAll(() => {
+const setMockApiResponses = (mockApiResponses: any) => {
   global.fetch = jest.fn((url: URL) => {
-    const mockApiResponses = [
-      {
-        url: 'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=demo',
-        result: {
-          ok: true,
-          status: 200,
-          text: () => Promise.resolve(symbolsResponseText),
-          headers: new Headers({}),
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/events?apikey=demo&exchange=NASDAQ&symbol=ABC',
-        result: {
-          ok: true,
-          status: 200,
-          json: () => eventsResponseJson,
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=My+Custom+API+Key',
-        result: {
-          ok: true,
-          status: 200,
-          text: () => Promise.resolve(symbolsResponseText),
-          headers: new Headers({}),
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/transcript?apikey=My+Custom+API+Key&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1',
-        result: {
-          ok: true,
-          status: 200,
-          json: () => transcriptResponseJson,
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1',
-        result: {
-          ok: true,
-          status: 200,
-          json: () => transcriptResponseJson,
-          headers: new Headers({}),
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=2',
-        result: {
-          ok: true,
-          status: 200,
-          json: () => transcriptLevel2ResponseJson,
-          headers: new Headers({}),
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=3',
-        result: {
-          ok: true,
-          status: 200,
-          json: () => transcriptLevel3ResponseJson,
-          headers: new Headers({}),
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=4',
-        result: {
-          ok: true,
-          status: 200,
-          json: () => level4Response,
-          headers: new Headers({}),
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/symbols/sp500.txt?apikey=demo',
-        result: {
-          ok: true,
-          status: 200,
-          text: () => sp500CompaniesTxtFile,
-          headers: new Headers({}),
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/symbols/sp500.txt?apikey=My+Custom+API+Key',
-        result: {
-          ok: true,
-          status: 200,
-          text: () => sp500CompaniesWithNonexistentSymbolsTxtFile,
-          headers: new Headers({}),
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/transcript?apikey=CUSTOM_API_KEY&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1',
-        result: {
-          ok: true,
-          status: 404,
-          headers: new Headers({}),
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/transcript?apikey=BASIC_PLAN_API_KEY&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=4',
-        result: {
-          ok: false,
-          status: 403,
-          headers: new Headers({
-            'x-plan-name': 'basic',
-          }),
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=INVALID_API_KEY',
-        result: {
-          ok: false,
-          status: 401,
-          headers: new Headers({}),
-        },
-      },
-      {
-        url: 'https://v2.api.earningscall.biz/audio?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1',
-        result: {
-          ok: true,
-          status: 200,
-          arrayBuffer: () => Promise.resolve(new Uint8Array([0, 0, 0, 0, 0])),
-          headers: new Headers({
-            'content-length': '100',
-            'content-type': 'audio/mpeg',
-            'last-modified': '2024-01-01T00:00:00.000Z',
-          }),
-        },
-      },
-    ];
     for (const mockApiResponse of mockApiResponses) {
       if (url.toString() === mockApiResponse.url) {
         return mockApiResponse.result;
@@ -304,7 +186,9 @@ beforeAll(() => {
     }
     return Promise.reject(new Error(`Unhandled request: ${url}`));
   }) as jest.Mock;
-});
+};
+
+beforeAll(() => {});
 
 afterAll(() => {
   jest.restoreAllMocks();
@@ -317,17 +201,29 @@ beforeEach(() => {
 
 describe('company', () => {
   test('getCompany non demo account throws InsufficientApiAccessError', async () => {
+    setMockApiResponses([demoSymbolsMock]);
     await expect(getCompany({ symbol: 'XYZ' })).rejects.toThrow(
       '"XYZ" requires an API Key for access. To get your API Key, see: https://earningscall.biz/api-pricing',
     );
   });
 
   test('getCompany with invalid api key throws NotFoundError', async () => {
+    setMockApiResponses([
+      {
+        url: 'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=INVALID_API_KEY',
+        result: {
+          ok: false,
+          status: 401,
+          headers: new Headers({}),
+        },
+      },
+    ]);
     setApiKey('INVALID_API_KEY');
     await expect(getCompany({ symbol: 'ABC' })).rejects.toThrow('Unauthorized');
   });
 
   test('getCompany', async () => {
+    setMockApiResponses([demoSymbolsMock]);
     const company = await getCompany({ symbol: 'ABC' });
     expect(company.name).toBe('ABC Test Company Inc.');
     expect(company.companyInfo.exchange).toBe('NASDAQ');
@@ -346,6 +242,7 @@ describe('company', () => {
   });
 
   test('getCompany by symbol and exchange', async () => {
+    setMockApiResponses([demoSymbolsMock]);
     const company = await getCompany({ symbol: 'ABC', exchange: 'NASDAQ' });
     expect(company.name).toBe('ABC Test Company Inc.');
     expect(company.companyInfo.exchange).toBe('NASDAQ');
@@ -353,6 +250,17 @@ describe('company', () => {
   });
 
   test('get events', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/events?apikey=demo&exchange=NASDAQ&symbol=ABC',
+        result: {
+          ok: true,
+          status: 200,
+          json: () => eventsResponseJson,
+        },
+      },
+    ]);
     const company = await getCompany({ symbol: 'ABC' });
     const events = await company.events();
     expect(events.length).toEqual(8);
@@ -361,122 +269,488 @@ describe('company', () => {
     expect(events[0].conferenceDate).toEqual('2024-10-31T17:00:00.000-04:00');
   });
 
-  test('get transcript is missing', async () => {
+  test('get transcript wrong api key', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=WRONG_API_KEY&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1',
+        result: {
+          ok: false,
+          status: 401,
+          headers: new Headers({}),
+        },
+      },
+    ]);
     const company = await getCompany({ symbol: 'ABC' });
-    setApiKey('CUSTOM_API_KEY');
-    const transcript = await company.getTranscript({ year: 2022, quarter: 1 });
+    setApiKey('WRONG_API_KEY');
+    await expect(
+      company.getBasicTranscript({ year: 2022, quarter: 1 }),
+    ).rejects.toThrow('Unauthorized');
+  });
+
+  test('get transcript is missing', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1',
+        result: {
+          ok: true,
+          status: 404,
+          headers: new Headers({}),
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+    const transcript = await company.getBasicTranscript({
+      year: 2022,
+      quarter: 1,
+    });
     expect(transcript).toBeUndefined();
   });
 
-  test('get enhanced transcript not authorized', async () => {
+  test('get speaker groups http 429 too many requests', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=2',
+        result: {
+          ok: false,
+          status: 429,
+          headers: new Headers({}),
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+    await expect(
+      company.getSpeakerGroups({ year: 2022, quarter: 1 }),
+    ).rejects.toThrow('Too many requests');
+  });
+
+  test('get speaker groups not found', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=2',
+        result: {
+          ok: true,
+          status: 404,
+          headers: new Headers({}),
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+    const transcript = await company.getSpeakerGroups({
+      year: 2022,
+      quarter: 1,
+    });
+    expect(transcript).toBeUndefined();
+  });
+
+  test('get speaker groups not authorized', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=2',
+        result: {
+          ok: false,
+          status: 403,
+          headers: new Headers({
+            'x-plan-name': 'basic',
+          }),
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+    await expect(
+      company.getSpeakerGroups({ year: 2022, quarter: 1 }),
+    ).rejects.toThrow(
+      'Your plan (basic) does not include Enhanced Transcript Data. Upgrade your plan here: https://earningscall.biz/api-pricing',
+    );
+  });
+
+  test('get transcript by passing event', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1',
+        result: {
+          ok: true,
+          status: 200,
+          json: () => transcriptResponseJson,
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+    const transcript = await company.getBasicTranscript({
+      event: { year: 2022, quarter: 1, conferenceDate: '2022-01-01' },
+    });
+    expect(transcript?.event.year).toBe(2022);
+    expect(transcript?.event.quarter).toBe(1);
+    expect(transcript?.event.conferenceDate).toBe('2022-01-01');
+  });
+
+  test('get word level timestamps not found', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=3',
+        result: {
+          ok: true,
+          status: 404,
+          headers: new Headers({}),
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+    const transcript = await company.getWordLevelTimestamps({
+      year: 2022,
+      quarter: 1,
+    });
+    expect(transcript).toBeUndefined();
+  });
+
+  test('get word level timestamps not authorized', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=3',
+        result: {
+          ok: false,
+          status: 403,
+          headers: new Headers({
+            'x-plan-name': 'basic',
+          }),
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+    await expect(
+      company.getWordLevelTimestamps({ year: 2022, quarter: 1 }),
+    ).rejects.toThrow(
+      'Your plan (basic) does not include Enhanced Transcript Data. Upgrade your plan here: https://earningscall.biz/api-pricing',
+    );
+  });
+
+  test('get question and answer not authorized', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=BASIC_PLAN_API_KEY&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=4',
+        result: {
+          ok: false,
+          status: 403,
+          headers: new Headers({
+            'x-plan-name': 'basic',
+          }),
+        },
+      },
+    ]);
     const company = await getCompany({ symbol: 'ABC' });
     setApiKey('BASIC_PLAN_API_KEY');
     await expect(
-      company.getTranscript({
+      company.getQuestionAndAnswerTranscript({
         year: 2022,
         quarter: 1,
-        level: 4,
       }),
     ).rejects.toThrow(
       'Your plan (basic) does not include Enhanced Transcript Data. Upgrade your plan here: https://earningscall.biz/api-pricing',
     );
   });
 
-  test('get transcript', async () => {
+  test('get basic transcript validates parameters', async () => {
+    setMockApiResponses([demoSymbolsMock]);
     const company = await getCompany({ symbol: 'ABC' });
+    const options = {
+      year: undefined,
+      quarter: undefined,
+    } as unknown as GetTranscriptOptions;
 
-    await expect(company.getTranscript({})).rejects.toThrow(
+    await expect(company.getBasicTranscript(options)).rejects.toThrow(
       'Must specify either event or year and quarter',
     );
 
     await expect(
-      company.getTranscript({ year: 2022, quarter: 0 }),
+      company.getBasicTranscript({ year: 2022, quarter: 0 }),
     ).rejects.toThrow('Invalid quarter. Must be one of: {1,2,3,4}');
 
     await expect(
-      company.getTranscript({ year: 2022, quarter: 1, level: 5 }),
-    ).rejects.toThrow('Invalid level. Must be one of: {1,2,3,4}');
-
-    await expect(
-      company.getTranscript({ year: 2022, quarter: 1, level: 0 }),
-    ).rejects.toThrow('Invalid level. Must be one of: {1,2,3,4}');
-
-    await expect(
-      company.getTranscript({ year: 1989, quarter: 1, level: 1 }),
+      company.getBasicTranscript({ year: 1989, quarter: 1 }),
     ).rejects.toThrow('Invalid year. Must be between 1990 and 2030');
 
     await expect(
-      company.getTranscript({ year: 2031, quarter: 1, level: 1 }),
+      company.getBasicTranscript({ year: 2031, quarter: 1 }),
+    ).rejects.toThrow('Invalid year. Must be between 1990 and 2030');
+  });
+
+  test('get basic transcript success', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1',
+        result: {
+          ok: true,
+          status: 200,
+          json: () => transcriptResponseJson,
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+    const options = {
+      year: undefined,
+      quarter: undefined,
+    } as unknown as GetTranscriptOptions;
+
+    await expect(company.getBasicTranscript(options)).rejects.toThrow(
+      'Must specify either event or year and quarter',
+    );
+
+    await expect(
+      company.getBasicTranscript({ year: 2022, quarter: 0 }),
+    ).rejects.toThrow('Invalid quarter. Must be one of: {1,2,3,4}');
+
+    await expect(
+      company.getBasicTranscript({ year: 1989, quarter: 1 }),
     ).rejects.toThrow('Invalid year. Must be between 1990 and 2030');
 
-    const transcript = await company.getTranscript({ year: 2022, quarter: 1 });
+    await expect(
+      company.getBasicTranscript({ year: 2031, quarter: 1 }),
+    ).rejects.toThrow('Invalid year. Must be between 1990 and 2030');
 
-    expect(transcript?.event?.year).toBe(2022);
-    expect(transcript?.event?.quarter).toBe(1);
-    expect(transcript?.event?.conferenceDate).toBe('2022-01-01');
+    const transcript = await company.getBasicTranscript({
+      year: 2022,
+      quarter: 1,
+    });
+
+    expect(transcript?.event.year).toBe(2022);
+    expect(transcript?.event.quarter).toBe(1);
+    expect(transcript?.event.conferenceDate).toBe('2022-01-01');
     expect(transcript?.text).toBe(
       'Good day and welcome to the ABC Test Company Inc. Q1 FY 2022 earnings conference call.',
     );
   });
 
-  test('get transcript with api key', async () => {
+  test('get transcript with custom api key', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/symbols-v2.txt?apikey=My+Custom+API+Key',
+        result: {
+          ok: true,
+          status: 200,
+          text: () => Promise.resolve(symbolsResponseText),
+          headers: new Headers({}),
+        },
+      },
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=My+Custom+API+Key&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=1',
+        result: {
+          ok: true,
+          status: 200,
+          json: () => transcriptResponseJson,
+        },
+      },
+    ]);
     setApiKey('My Custom API Key');
     const company = await getCompany({ symbol: 'ABC' });
-    const transcript = await company.getTranscript({ year: 2022, quarter: 1 });
+    const transcript = await company.getBasicTranscript({
+      year: 2022,
+      quarter: 1,
+    });
     expect(transcript?.event.year).toBe(2022);
     expect(transcript?.event.quarter).toBe(1);
+    expect(transcript?.event.conferenceDate).toBe('2022-01-01');
   });
 
   test('get transcript level 2', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=2',
+        result: {
+          ok: true,
+          status: 200,
+          json: () => transcriptLevel2ResponseJson,
+        },
+      },
+    ]);
     const company = await getCompany({ symbol: 'ABC' });
 
-    const transcript = await company.getTranscript({
+    const transcript = await company.getSpeakerGroups({
       year: 2022,
       quarter: 1,
-      level: 2,
     });
 
-    expect(transcript?.event?.year).toBe(2022);
-    expect(transcript?.event?.quarter).toBe(1);
-    expect(transcript?.event?.conferenceDate).toBe('2022-01-01');
-    expect(transcript?.text).toBe(
-      "Good day and welcome to the ABC Test Company Inc. Q1 FY 2022 earnings conference call. Today's call is being recorded. Please go ahead. Thank you. Good afternoon, and thank you for joining us. I am the awesome CEO John Smith.",
+    expect(transcript?.event.year).toBe(2022);
+    expect(transcript?.event.quarter).toBe(1);
+    expect(transcript?.event.conferenceDate).toBe('2022-01-01');
+    expect(transcript?.speakers[0].speakerInfo?.name).toBe('Operator');
+    expect(transcript?.speakers[0].speakerInfo?.title).toBe('Host');
+    expect(transcript?.speakers[0].text).toBe(
+      "Good day and welcome to the ABC Test Company Inc. Q1 FY 2022 earnings conference call. Today's call is being recorded. Please go ahead.",
     );
-    expect(transcript?.speakers?.[0]?.speakerInfo?.name).toBe('Operator');
-    expect(transcript?.speakers?.[0]?.speakerInfo?.title).toBe('Host');
-    expect(transcript?.speakers?.[1]?.speakerInfo?.name).toBe('John Smith');
-    expect(transcript?.speakers?.[1]?.speakerInfo?.title).toBe('CEO');
+    expect(transcript?.speakers[1].speakerInfo?.name).toBe('John Smith');
+    expect(transcript?.speakers[1].speakerInfo?.title).toBe('CEO');
+    expect(transcript?.speakers[1].text).toBe(
+      'Thank you. Good afternoon, and thank you for joining us. I am the awesome CEO John Smith.',
+    );
+  });
+
+  test('get transcript level 2 not found', async () => {
+    const company = await getCompany({ symbol: 'ABC' });
+
+    const transcript = await company.getSpeakerGroups({
+      year: 2022,
+      quarter: 1,
+    });
+
+    expect(transcript?.event.year).toBe(2022);
+    expect(transcript?.event.quarter).toBe(1);
+    expect(transcript?.event.conferenceDate).toBe('2022-01-01');
+    expect(transcript?.speakers[0].speakerInfo?.name).toBe('Operator');
+    expect(transcript?.speakers[0].speakerInfo?.title).toBe('Host');
+    expect(transcript?.speakers[1].speakerInfo?.name).toBe('John Smith');
+    expect(transcript?.speakers[1].speakerInfo?.title).toBe('CEO');
+  });
+
+  test('get transcript level 3 http 429 too many requests', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=3',
+        result: {
+          ok: false,
+          status: 429,
+          headers: new Headers({}),
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+    await expect(
+      company.getWordLevelTimestamps({ year: 2022, quarter: 1 }),
+    ).rejects.toThrow('Too many requests');
   });
 
   test('get transcript level 3', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=3',
+        result: {
+          ok: true,
+          status: 200,
+          json: () => transcriptLevel3ResponseJson,
+        },
+      },
+    ]);
     const company = await getCompany({ symbol: 'ABC' });
 
-    const transcript = await company.getTranscript({
+    const transcript = await company.getWordLevelTimestamps({
       year: 2022,
       quarter: 1,
-      level: 3,
     });
 
-    expect(transcript?.event?.year).toBe(2022);
-    expect(transcript?.event?.quarter).toBe(1);
-    expect(transcript?.event?.conferenceDate).toBe('2022-01-01');
-    expect(transcript?.text).toBe(
-      'Good day and welcome to the ABC Test Company Inc. Q1 FY 2022 earnings conference call. Thank you Good afternoon and thank you for joining us I am the awesome CEO John Smith.',
-    );
+    expect(transcript?.event.year).toBe(2022);
+    expect(transcript?.event.quarter).toBe(1);
+    expect(transcript?.event.conferenceDate).toBe('2022-01-01');
+    expect(transcript?.speakers[0].words).toEqual([
+      'Good',
+      'day',
+      'and',
+      'welcome',
+      'to',
+      'the',
+      'ABC',
+      'Test',
+      'Company',
+      'Inc.',
+      'Q1',
+      'FY',
+      '2022',
+      'earnings',
+      'conference',
+      'call.',
+    ]);
+    expect(transcript?.speakers[1].words).toEqual([
+      'Thank',
+      'you',
+      'Good',
+      'afternoon',
+      'and',
+      'thank',
+      'you',
+      'for',
+      'joining',
+      'us',
+      'I',
+      'am',
+      'the',
+      'awesome',
+      'CEO',
+      'John',
+      'Smith.',
+    ]);
   });
 
-  test('get transcript level 4', async () => {
+  test('get question and answer not found', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=4',
+        result: {
+          ok: true,
+          status: 404,
+          headers: new Headers({}),
+        },
+      },
+    ]);
     const company = await getCompany({ symbol: 'ABC' });
-
-    const transcript = await company.getTranscript({
+    const transcript = await company.getQuestionAndAnswerTranscript({
       year: 2022,
       quarter: 1,
-      level: 4,
+    });
+    expect(transcript).toBeUndefined();
+  });
+
+  test('get question and answer http 429 too many requests', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=4',
+        result: {
+          ok: false,
+          status: 429,
+          headers: new Headers({}),
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+    await expect(
+      company.getQuestionAndAnswerTranscript({ year: 2022, quarter: 1 }),
+    ).rejects.toThrow('Too many requests');
+  });
+
+  test('get question and answer level 4', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/transcript?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1&level=4',
+        result: {
+          ok: true,
+          status: 200,
+          json: () => level4Response,
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+
+    const transcript = await company.getQuestionAndAnswerTranscript({
+      year: 2022,
+      quarter: 1,
     });
 
-    expect(transcript?.event?.year).toBe(2022);
-    expect(transcript?.event?.quarter).toBe(1);
-    expect(transcript?.event?.conferenceDate).toBe('2022-01-01');
+    expect(transcript?.event.year).toBe(2022);
+    expect(transcript?.event.quarter).toBe(1);
+    expect(transcript?.event.conferenceDate).toBe('2022-01-01');
     expect(transcript?.preparedRemarks).toBe(
       "Good day and welcome to the Apple Q1 FY 2022 earnings conference call. Today's call is being recorded. At this time, for opening remarks and introductions, I would like to turn the call over to Tejas Ghala, Director of Investor Relations and Corporate Finance. Please go ahead. Thank you. Good afternoon, and thank you for joining us. Speaking first today is Apple CEO Tim Cook, and he'll be followed by CFO Luca Maestri. After that, we'll open the call to questions from analysts.",
     );
@@ -486,6 +760,7 @@ describe('company', () => {
   });
 
   test('getAllCompanies', async () => {
+    setMockApiResponses([demoSymbolsMock]);
     const companies = await getAllCompanies();
     expect(companies.length).toBe(2);
     const names = companies.map((company) => company.companyInfo.name);
@@ -494,12 +769,34 @@ describe('company', () => {
   });
 
   test('getSP500Companies', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/symbols/sp500.txt?apikey=demo',
+        result: {
+          ok: true,
+          status: 200,
+          text: () => Promise.resolve(sp500CompaniesTxtFile),
+        },
+      },
+    ]);
     const companies = await getSP500Companies();
     expect(companies.length).toBe(2);
   });
 
   test('getSP500Companies with nonexistent symbols', async () => {
-    setApiKey('My Custom API Key');
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/symbols/sp500.txt?apikey=demo',
+        result: {
+          ok: true,
+          status: 200,
+          text: () =>
+            Promise.resolve(sp500CompaniesWithNonexistentSymbolsTxtFile),
+        },
+      },
+    ]);
     const companies = await getSP500Companies();
     expect(companies.length).toBe(2);
   });
@@ -518,36 +815,103 @@ describe('company', () => {
     expect(convertedData.symbol).toBeUndefined();
   });
 
+  test('getAudioFile http 404 not found', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/audio?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1',
+        result: {
+          ok: false,
+          status: 404,
+          headers: new Headers({}),
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+    const result = await company.downloadAudioFile({ year: 2022, quarter: 1 });
+    expect(result).toBeUndefined();
+  });
+
+  test('getAudioFile http 429 too many requests', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/audio?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1',
+        result: {
+          ok: false,
+          status: 429,
+          headers: new Headers({}),
+        },
+      },
+    ]);
+    const company = await getCompany({ symbol: 'ABC' });
+    await expect(
+      company.downloadAudioFile({ year: 2022, quarter: 1 }),
+    ).rejects.toThrow('Too many requests');
+  });
+
   test('getAudioFile with outputFilePath specified', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/audio?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1',
+        result: {
+          ok: true,
+          status: 200,
+          arrayBuffer: () => Promise.resolve(new Uint8Array([0, 0, 0, 0, 0])),
+          headers: new Headers({
+            'content-length': '100',
+            'content-type': 'audio/mpeg',
+            'last-modified': '2024-01-01T00:00:00.000Z',
+          }),
+        },
+      },
+    ]);
     const tempFilePath = path.join(
       os.tmpdir(),
       `ABC_2022_q1-${Date.now()}.mp3`,
     );
     const company = await getCompany({ symbol: 'ABC' });
-    const audioFile = await company.getAudioFile({
+    const audioFile = await company.downloadAudioFile({
       year: 2022,
       quarter: 1,
       outputFilePath: tempFilePath,
     });
-    expect(audioFile.contentLength).toBe(100);
-    expect(audioFile.contentType).toBe('audio/mpeg');
-    expect(audioFile.lastModified).toBeDefined();
-    expect(audioFile.outputFilePath).toBe(tempFilePath);
+    expect(audioFile?.contentLength).toBe(100);
+    expect(audioFile?.contentType).toBe('audio/mpeg');
+    expect(audioFile?.lastModified).toBeDefined();
+    expect(audioFile?.outputFilePath).toBe(tempFilePath);
     expect(fs.existsSync(tempFilePath)).toBe(true);
     fs.unlinkSync(tempFilePath);
   });
 
   test('getAudioFile without outputFilePath specified', async () => {
+    setMockApiResponses([
+      demoSymbolsMock,
+      {
+        url: 'https://v2.api.earningscall.biz/audio?apikey=demo&exchange=NASDAQ&symbol=ABC&year=2022&quarter=1',
+        result: {
+          ok: true,
+          status: 200,
+          arrayBuffer: () => Promise.resolve(new Uint8Array([0, 0, 0, 0, 0])),
+          headers: new Headers({
+            'content-length': '100',
+            'content-type': 'audio/mpeg',
+            'last-modified': '2024-01-01T00:00:00.000Z',
+          }),
+        },
+      },
+    ]);
     const company = await getCompany({ symbol: 'ABC' });
-    const audioFile = await company.getAudioFile({
+    const audioFile = await company.downloadAudioFile({
       year: 2022,
       quarter: 1,
     });
-    expect(audioFile.contentLength).toBe(100);
-    expect(audioFile.contentType).toBe('audio/mpeg');
-    expect(audioFile.lastModified).toBeDefined();
-    expect(audioFile.outputFilePath).toBeDefined();
-    expect(fs.existsSync(audioFile.outputFilePath!)).toBe(true);
-    fs.unlinkSync(audioFile.outputFilePath!);
+    expect(audioFile?.contentLength).toBe(100);
+    expect(audioFile?.contentType).toBe('audio/mpeg');
+    expect(audioFile?.lastModified).toBeDefined();
+    expect(audioFile?.outputFilePath).toBeDefined();
+    expect(fs.existsSync(audioFile?.outputFilePath!)).toBe(true);
+    fs.unlinkSync(audioFile?.outputFilePath!);
   });
 });
