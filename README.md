@@ -284,7 +284,7 @@ Output
 
 By default, this library grants you access to only two companies, Apple Inc. and Microsoft, Inc.
 
-To gain access to 5,000+ companies please signup here to get your API key.
+To gain access to 5,000+ companies please signup here to get your API key: [https://earningscall.biz/api-pricing](https://earningscall.biz/api-pricing)
 
 
 Once you have access to your API key, you can set the API Key like this:
@@ -292,7 +292,7 @@ Once you have access to your API key, you can set the API Key like this:
 
 ### Set API Key
 
-For access to non-demo companies, you need to set an API key.
+For access to the full library of 5,000+ companies, you must set an API key.
 
 You can set the API key with the `setApiKey` functions.
 
