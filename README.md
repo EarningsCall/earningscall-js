@@ -17,6 +17,18 @@ applications written in the JavaScript language (with TypeScript support). It in
 classes for API resources that initialize themselves dynamically from API
 responses.
 
+## Implementation Details
+
+This library is designed for maximum efficiency and minimal dependencies:
+
+- Zero external dependencies - relies only on standard JavaScript Node.js functionality
+- Uses the built-in `fetch` API for HTTP requests
+- Small bundle size (~4KB minified)
+- Tree-shakeable ES modules
+- TypeScript types included
+
+The lightweight implementation means faster install times, reduced security attack surface, and better reliability since there are no third-party dependencies to maintain.
+
 # Requirements
 
 * Node.js 18+
