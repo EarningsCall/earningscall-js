@@ -23,9 +23,8 @@ This library is designed for maximum efficiency and minimal dependencies:
 
 - Zero external dependencies - relies only on standard JavaScript Node.js functionality
 - Uses the built-in `fetch` API for HTTP requests
-- Small bundle size (~4KB minified)
-- Tree-shakeable ES modules
-- TypeScript types included
+- Small library size (~4KB total)
+- Tree-shakeable ES modules and TypeScript types included
 
 The lightweight implementation means faster install times, reduced security attack surface, and better reliability since there are no third-party dependencies to maintain.
 
@@ -58,9 +57,9 @@ const { getCompany } = require('earningscall');
 
 ## Examples
 
-### Get Basic Transcript for a Single Year and Quarter
+### Retrieving a Basic Transcript for a Specific Year and Quarter
 
-If you want to retrieve a specific transcript of a company for a single year and quarter, you can do so with the `getBasicTranscript` method.
+To obtain a company’s transcript for a particular year and quarter, use the `getBasicTranscript()` method. This method returns the complete transcript as a single continuous text string, as well as the date of the conference call.
 
 
 ```typescript
@@ -82,9 +81,9 @@ Company name: Apple Inc. Sector: Technology Industry: Consumer Electronics
 AAPL Q3 2021 Transcript: "Good day, and welcome to the Apple Q3 FY 2021 Earnings Conference Call. Today's call is being recorded..."
 ```
 
-### Get All Transcripts for a Company
+### Retrieving All Transcripts for a Company
 
-Sometimes you want to retrieve all transcripts for a company.  You can do so with the `events` method.
+To access every available transcript for a specific company, use the `events()` method. This approach provides a comprehensive list of the company’s conference call transcripts in one place.
 
 ```typescript
 import { getCompany } from "earningscall";
@@ -115,7 +114,9 @@ Getting all transcripts for: Apple Inc...
 ```
 
 
-### Get Text by Speaker with Speaker Name and Title
+### Retrieve Text by Speaker, Including Name and Title
+
+You can access earnings call transcripts segmented by speaker to gain a clearer understanding of who said what. The data is returned as an array of objects, where each object includes the speaker’s name, their professional title, and the text they provided. This structure makes it easy to identify the individual’s role and contributions during the call.
 
 ```typescript
 import { getCompany } from "earningscall";
@@ -145,14 +146,9 @@ Text: Thank you, Tim, and good afternoon, everyone. Revenue for the March quarte
 ```
 
 
-### Get Word-Level Timestamps
-
-What are Word-Level Timestamps?
+### Retrieving Word-Level Timestamps
 
 Word-level timestamps are precise markers that indicate the exact point in time when each word in a transcript is spoken during an audio recording.
-
-For example, in an earnings call transcript:
-	•	Each word is associated with a start time (typically in seconds or milliseconds) corresponding to when that word is spoken in the recording.
 
 Why Are Word-Level Timestamps Useful?
 
@@ -165,12 +161,11 @@ Why Are Word-Level Timestamps Useful?
 3. Sentiment Analysis:
    - Analyzing the tone or meaning of specific words and correlating them to the audio.
    - Example: “Revenue growth” may have a positive sentiment, while “restructuring” may be neutral or negative.
-4. Improved Highlighting and Interactivity:
-   - Interactive transcripts can highlight words in real time as the speaker progresses.
-   - Example: Live captions in Zoom or Teams highlight spoken words for clarity.
-5. AI Applications:
+4. AI Applications:
    - Word-level timestamps enable AI models to identify pauses, stress on words, or other speech patterns.
    - Example: Detecting emphasis on “record earnings” might indicate a focus on financial success.
+
+Here's how you can retrieve the word-level timestamps for a single quarter:
 
 ```typescript
 import { getCompany } from "earningscall";
@@ -204,8 +199,9 @@ Words with start times: [
 ### Get Prepared Remarks and Q&A for a Single Quarter
 
 Prepared remarks and Q&A sections are key parts of earnings call transcripts that provide valuable insights to investors and analysts.
-	•	Prepared Remarks: This is the scripted portion at the start of the call where executives (like the CEO or CFO) summarize the company’s performance, financials, and outlook. It is pre-planned and polished.
-	•	Q&A: This follows the prepared remarks and is an unscripted session where analysts and investors ask questions, and company executives respond. It often contains candid insights not covered in prepared remarks.
+
+* **Prepared Remarks:** This is the scripted portion at the start of the call where executives (like the CEO or CFO) summarize the company’s performance, financials, and outlook. It is pre-planned and polished.
+* **Q&A:** This follows the prepared remarks and is an unscripted session where analysts and investors ask questions, and company executives respond. It often contains candid insights not covered in prepared remarks.
 
 Here's how you can retrieve the prepared remarks and Q&A for a single quarter.
 
