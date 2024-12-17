@@ -154,7 +154,7 @@ const company = await getCompany({ symbol: "AAPL" });
 const wordLevelTranscript = await company.getWordLevelTimestamps({ year: 2021, quarter: 3 });
 
 const firstSpeaker = wordLevelTranscript?.speakers[0];
-const wordsAndStartTimes = firstSpeaker?.words?.map((word, index) => ({
+const wordsAndStartTimes = firstSpeaker?.words.map((word, index) => ({
   word,
   startTime: firstSpeaker.startTimes[index]
 }));
