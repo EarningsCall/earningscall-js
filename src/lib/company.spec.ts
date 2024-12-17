@@ -283,9 +283,9 @@ describe('company', () => {
     ]);
     const company = await getCompany({ symbol: 'ABC' });
     setApiKey('WRONG_API_KEY');
-    await expect(company.getBasicTranscript({ year: 2022, quarter: 1 })).rejects.toThrow(
-      'Unauthorized',
-    );
+    await expect(
+      company.getBasicTranscript({ year: 2022, quarter: 1 }),
+    ).rejects.toThrow('Unauthorized');
   });
 
   test('get transcript is missing', async () => {
@@ -321,9 +321,9 @@ describe('company', () => {
       },
     ]);
     const company = await getCompany({ symbol: 'ABC' });
-    await expect(company.getSpeakerGroups({ year: 2022, quarter: 1 })).rejects.toThrow(
-      'Too many requests',
-    );
+    await expect(
+      company.getSpeakerGroups({ year: 2022, quarter: 1 }),
+    ).rejects.toThrow('Too many requests');
   });
 
   test('get speaker groups not found', async () => {
@@ -611,7 +611,6 @@ describe('company', () => {
     expect(transcript?.speakers[1].speakerInfo?.name).toBe('John Smith');
     expect(transcript?.speakers[1].speakerInfo?.title).toBe('CEO');
   });
-
 
   test('get transcript level 3 http 429 too many requests', async () => {
     setMockApiResponses([
