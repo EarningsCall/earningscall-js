@@ -68,8 +68,8 @@ import { getCompany } from "earningscall";
 
 const company = await getCompany({ symbol: "AAPL" });  // Get Company object by ticker symbol "AAPL"
 const companyInfo = company.companyInfo;
-console.log(`Company name: ${companyInfo.name} Sector: ${companyInfo.sector} Industry: ${companyInfo.industry}`);
 
+console.log(`Company name: ${companyInfo.name} Sector: ${companyInfo.sector} Industry: ${companyInfo.industry}`);
 const transcript = await company.getBasicTranscript({ year: 2021, quarter: 3 });
 console.log(`${companyInfo.symbol} Q3 2021 Transcript: "${transcript?.text.slice(0, 100)}..."`);
 ```
@@ -121,18 +121,27 @@ Getting all transcripts for: Apple Inc...
 import { getCompany } from "earningscall";
 
 const company = await getCompany({ symbol: "AAPL" });
-
 const speakerGroups = await company.getSpeakerGroups({ year: 2024, quarter: 2 });
-const firstSpeaker = speakerGroups!.speakers[0];
-console.log(`Speaker: ${firstSpeaker.speakerInfo?.name}, ${firstSpeaker.speakerInfo?.title}`);
-console.log(`Text: ${firstSpeaker.text}`);
+const firstSpeaker = speakerGroups?.speakers[0];
+const secondSpeaker = speakerGroups?.speakers[1];
+const thirdSpeaker = speakerGroups?.speakers[2];
+console.log(`Speaker: ${firstSpeaker?.speakerInfo?.name}, ${firstSpeaker?.speakerInfo?.title}`);
+console.log(`Text: ${firstSpeaker?.text?.slice(0, 100)}...`);
+console.log(`Speaker: ${secondSpeaker?.speakerInfo?.name}, ${secondSpeaker?.speakerInfo?.title}`);
+console.log(`Text: ${secondSpeaker?.text?.slice(0, 100)}...`);
+console.log(`Speaker: ${thirdSpeaker?.speakerInfo?.name}, ${thirdSpeaker?.speakerInfo?.title}`);
+console.log(`Text: ${thirdSpeaker?.text?.slice(0, 100)}...`);
 ```
 
 Output
 
 ```
 Speaker: Suhasini Chandramouli, Director of Investor Relations
-Text: Good afternoon and welcome to the Apple Q2 fiscal year 2024 earnings conference call...
+Text: Good afternoon and welcome to the Apple Q2 fiscal year 2024 earnings conference call. My name is Suh...
+Speaker: Tim Cook, CEO
+Text: Thank you, Suhasini. Good afternoon, everyone, and thanks for joining the call. Today, Apple is repo...
+Speaker: Luca Maestri, CFO
+Text: Thank you, Tim, and good afternoon, everyone. Revenue for the March quarter was $90.8 billion, down ...
 ```
 
 
@@ -142,14 +151,14 @@ Text: Good afternoon and welcome to the Apple Q2 fiscal year 2024 earnings confe
 import { getCompany } from "earningscall";
 
 const company = await getCompany({ symbol: "AAPL" });
-// Level 3 Transcript Data includes words and start times
-const transcript = await company.getWordLevelTimestamps({ year: 2021, quarter: 3 });
-const firstSpeaker = transcript?.speakers[0];
+const wordLevelTranscript = await company.getWordLevelTimestamps({ year: 2021, quarter: 3 });
+
+const firstSpeaker = wordLevelTranscript?.speakers[0];
 const wordsAndStartTimes = firstSpeaker?.words?.map((word, index) => ({
   word,
-  startTime: firstSpeaker?.startTimes![index]
+  startTime: firstSpeaker.startTimes[index]
 }));
-console.log(`Speaker: ${firstSpeaker?.speakerInfo?.name}, ${firstSpeaker?.speakerInfo?.title}`);
+console.log(`Speaker: ${firstSpeaker?.speaker}`);
 console.log("Words with start times:", wordsAndStartTimes);
 ```
 
@@ -195,7 +204,7 @@ import { getCompany } from "earningscall";
 const company = await getCompany({ symbol: "AAPL" });
 console.log(`Downloading audio file for ${company} Q3 2021...`);
 const audioFile = await company.downloadAudioFile({ year: 2021, quarter: 3 });
-console.log(`Audio file downloaded to: ${audioFile.outputFilePath}`);
+console.log(`Audio file downloaded to: ${audioFile?.outputFilePath}`);
 ```
 
 Output
