@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.1.0](https://github.com/EarningsCall/earningscall-js/compare/v1.0.4...v1.1.0) (2024-12-16)
 
--   BREAKING CHANGE: Remove `getTranscript()` function from `Company` class.  In it's place, there are now 4 new functions: `getBasicTranscript()`, `getSpeakerGroups()`, `getWordLevelTimestamps()`, and `getQuestionAndAnswerTranscript()`.
+-   BREAKING CHANGE: Remove `getTranscript()` function from `Company` class.  In it's place, there are now 4 new functions: `getBasicTranscript()`, `getSpeakerGroups()`, `getWordLevelTimestamps()`, and `getQuestionAndAnswerTranscript()`.  This is to enhance the developer experience by providing Types that are specific to type of transcript data that is being retrieved.
 -   BREAKING CHANGE: Change function name from `getAudioFile()` to `downloadAudioFile()`.
 -   Add `getBasicTranscript` method to `Company` class.
 -   Add `getSpeakerGroups` method to `Company` class.
