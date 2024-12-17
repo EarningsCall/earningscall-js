@@ -147,6 +147,31 @@ Text: Thank you, Tim, and good afternoon, everyone. Revenue for the March quarte
 
 ### Get Word-Level Timestamps
 
+What are Word-Level Timestamps?
+
+Word-level timestamps are precise markers that indicate the exact point in time when each word in a transcript is spoken during an audio recording.
+
+For example, in an earnings call transcript:
+	•	Each word is associated with a start time (typically in seconds or milliseconds) corresponding to when that word is spoken in the recording.
+
+Why Are Word-Level Timestamps Useful?
+
+1. Enhanced Searchability and Navigation:
+   - You can jump to the exact part of the audio or video where a specific word or phrase was spoken.
+   - Example: If the CEO says “inflation” at 3.25 seconds, you can navigate directly to that point.
+2. Precise Content Synchronization:
+   - Sync subtitles or captions with spoken content seamlessly.
+   - Example: Video platforms like YouTube and Netflix use this feature for accurate subtitles.
+3. Sentiment Analysis:
+   - Analyzing the tone or meaning of specific words and correlating them to the audio.
+   - Example: “Revenue growth” may have a positive sentiment, while “restructuring” may be neutral or negative.
+4. Improved Highlighting and Interactivity:
+   - Interactive transcripts can highlight words in real time as the speaker progresses.
+   - Example: Live captions in Zoom or Teams highlight spoken words for clarity.
+5. AI Applications:
+   - Word-level timestamps enable AI models to identify pauses, stress on words, or other speech patterns.
+   - Example: Detecting emphasis on “record earnings” might indicate a focus on financial success.
+
 ```typescript
 import { getCompany } from "earningscall";
 
@@ -178,6 +203,12 @@ Words with start times: [
 
 ### Get Prepared Remarks and Q&A for a Single Quarter
 
+Prepared remarks and Q&A sections are key parts of earnings call transcripts that provide valuable insights to investors and analysts.
+	•	Prepared Remarks: This is the scripted portion at the start of the call where executives (like the CEO or CFO) summarize the company’s performance, financials, and outlook. It is pre-planned and polished.
+	•	Q&A: This follows the prepared remarks and is an unscripted session where analysts and investors ask questions, and company executives respond. It often contains candid insights not covered in prepared remarks.
+
+Here's how you can retrieve the prepared remarks and Q&A for a single quarter.
+
 ```typescript
 import { getCompany } from "earningscall";
 
@@ -197,6 +228,8 @@ Apple Inc. Q3 2021 Q&A: "Our first question comes from Katie Huberty from Morgan
 
 
 ### Download Audio File for a Single Quarter
+
+If you want to download the audio file for a single quarter, you can do so with the `downloadAudioFile` method.
 
 ```typescript
 import { getCompany } from "earningscall";
