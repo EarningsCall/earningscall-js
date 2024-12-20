@@ -25,4 +25,25 @@ describe('api', () => {
       'HTTP error status: 999',
     );
   });
+
+  test('validate user agent headers on HTTP request', async () => {
+    const mockResponse = {
+      ok: true,
+      status: 200,
+      headers: new Headers(),
+      json: jest.fn().mockResolvedValue({}),
+    };
+    global.fetch = jest.fn().mockResolvedValue(mockResponse);
+    const result = await getTranscript('NASDAQ', 'ABC', 2022, 1, 1);
+    expect(result).toEqual({});
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.any(URL),
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'X-EarningsCall-Version': expect.stringMatching(/^\d+\.\d+\.\d+$/),
+          'User-Agent': expect.stringContaining('EarningsCallJavaScript/'),
+        }),
+      }),
+    );
+  });
 });
