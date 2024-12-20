@@ -10,6 +10,7 @@ import {
   UnexpectedError,
 } from './errors';
 import { DownloadAudioFileResponse } from '../types';
+import os from 'os';
 
 const DOMAIN = 'earningscall.biz';
 const API_BASE = `https://v2.api.${DOMAIN}`;
@@ -37,11 +38,20 @@ export function isDemoAccount(): boolean {
   return getApiKey() === 'demo';
 }
 
-function getHeaders(): { [key: string]: string } {
+function getUserAgent(): string {
+  const osType = os.type();
+  const osRelease = os.release();
+  const platform = os.platform();
+  const arch = os.arch();
+  const nodeVersion = process.version;
   const earningsCallVersion = LIB_VERSION;
+  return `EarningsCallJavaScript/${earningsCallVersion} (${platform} ${osType}/${osRelease}; ${arch}) Node.js/${nodeVersion.slice(1)}`;
+}
+
+function getHeaders(): { [key: string]: string } {
   return {
-    'User-Agent': `EarningsCall TypeScript/${earningsCallVersion}`,
-    'X-EarningsCall-Version': earningsCallVersion,
+    'User-Agent': getUserAgent(),
+    'X-EarningsCall-Version': LIB_VERSION,
   };
 }
 
