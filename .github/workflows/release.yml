@@ -29,9 +29,9 @@ jobs:
       - name: Print Pull Request URL
         run: |
           echo "Pull Request URL: ${{ github.event.pull_request.html_url }}"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
       - name: Install Dependencies
@@ -48,7 +48,7 @@ jobs:
       - name: Coveralls
         uses: coverallsapp/github-action@v2
       - name: Store the build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: npm-package-build-artifacts
           path: build/
@@ -61,17 +61,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Node.js for NPM
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           registry-url: 'https://registry.npmjs.org'
           node-version: 22.x
 
       - run: npm install
       - name: Download all the Build Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: npm-package-build-artifacts
           path: build/
